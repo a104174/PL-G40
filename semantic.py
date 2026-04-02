@@ -344,6 +344,11 @@ def check_expression(expr, symbols, functions, errors, reported):
         check_expression(left, symbols, functions, errors, reported)
         check_expression(right, symbols, functions, errors, reported)
 
+    elif kind == 'mod':
+        _, left, right = expr
+        check_expression(left, symbols, functions, errors, reported)
+        check_expression(right, symbols, functions, errors, reported)
+
 
 def infer_type(expr, symbols, functions, errors, reported):
     kind = expr[0]
@@ -387,6 +392,27 @@ def infer_type(expr, symbols, functions, errors, reported):
         if left_type == 'LOGICAL' or right_type == 'LOGICAL':
             add_error(
                 f"Operação aritmética inválida com tipos {left_type} e {right_type}",
+                errors,
+                reported
+            )
+            return None
+
+        if left_type == 'REAL' or right_type == 'REAL':
+            return 'REAL'
+        return 'INTEGER'
+
+    if kind == 'mod':
+        _, left, right = expr
+
+        left_type = infer_type(left, symbols, functions, errors, reported)
+        right_type = infer_type(right, symbols, functions, errors, reported)
+
+        if left_type is None or right_type is None:
+            return None
+
+        if left_type == 'LOGICAL' or right_type == 'LOGICAL':
+            add_error(
+                f"Operação MOD inválida com tipos {left_type} e {right_type}",
                 errors,
                 reported
             )

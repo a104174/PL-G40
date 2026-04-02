@@ -222,6 +222,12 @@ def generate_expression(expr, code, functions):
         elif op == '/':
             code.append("DIV")
 
+    elif kind == 'mod':
+        _, left, right = expr
+        generate_expression(left, code, functions)
+        generate_expression(right, code, functions)
+        code.append("MOD")
+
 
 def generate_condition(cond, code, functions):
     kind = cond[0]

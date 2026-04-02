@@ -257,6 +257,13 @@ def p_expression_array_access(p):
     'expression : array_access'
     p[0] = p[1]
 
+def p_expression_mod(p):
+    'expression : ID LPAREN expression COMMA expression RPAREN'
+    if p[1] == 'MOD':
+        p[0] = ('mod', p[3], p[5])
+    else:
+        raise SyntaxError(f"Chamada inválida a '{p[1]}': apenas MOD suporta dois argumentos")
+
 def p_expression_true(p):
     'expression : DOT_TRUE'
     p[0] = ('bool', True)
