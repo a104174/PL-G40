@@ -1,0 +1,858 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    CONTINUE
+    DO
+    DOT_AND
+    DOT_EQ
+    DOT_GE
+    DOT_GT
+    DOT_LE
+    DOT_LT
+    DOT_NE
+    DOT_NOT
+    DOT_OR
+    ELSE
+    ENDIF
+    GOTO
+    IF
+    READ
+    THEN
+
+Grammar
+
+Rule 0     S' -> program
+Rule 1     program -> PROGRAM ID statements END
+Rule 2     statements -> statements statement
+Rule 3     statements -> statement
+Rule 4     statement -> declaration
+Rule 5     statement -> assignment
+Rule 6     statement -> print_stmt
+Rule 7     declaration -> INTEGER id_list
+Rule 8     declaration -> REAL id_list
+Rule 9     declaration -> LOGICAL id_list
+Rule 10    id_list -> id_list COMMA ID
+Rule 11    id_list -> ID
+Rule 12    assignment -> ID ASSIGN expression
+Rule 13    print_stmt -> PRINT TIMES COMMA print_list
+Rule 14    print_list -> print_list COMMA printable
+Rule 15    print_list -> printable
+Rule 16    printable -> expression
+Rule 17    printable -> STRING
+Rule 18    expression -> expression PLUS expression
+Rule 19    expression -> expression MINUS expression
+Rule 20    expression -> expression TIMES expression
+Rule 21    expression -> expression DIVIDE expression
+Rule 22    expression -> LPAREN expression RPAREN
+Rule 23    expression -> NUMBER
+Rule 24    expression -> ID
+Rule 25    expression -> DOT_TRUE
+Rule 26    expression -> DOT_FALSE
+
+Terminals, with rules where they appear
+
+ASSIGN               : 12
+COMMA                : 10 13 14
+CONTINUE             : 
+DIVIDE               : 21
+DO                   : 
+DOT_AND              : 
+DOT_EQ               : 
+DOT_FALSE            : 26
+DOT_GE               : 
+DOT_GT               : 
+DOT_LE               : 
+DOT_LT               : 
+DOT_NE               : 
+DOT_NOT              : 
+DOT_OR               : 
+DOT_TRUE             : 25
+ELSE                 : 
+END                  : 1
+ENDIF                : 
+GOTO                 : 
+ID                   : 1 10 11 12 24
+IF                   : 
+INTEGER              : 7
+LOGICAL              : 9
+LPAREN               : 22
+MINUS                : 19
+NUMBER               : 23
+PLUS                 : 18
+PRINT                : 13
+PROGRAM              : 1
+READ                 : 
+REAL                 : 8
+RPAREN               : 22
+STRING               : 17
+THEN                 : 
+TIMES                : 13 20
+error                : 
+
+Nonterminals, with rules where they appear
+
+assignment           : 5
+declaration          : 4
+expression           : 12 16 18 18 19 19 20 20 21 21 22
+id_list              : 7 8 9 10
+print_list           : 13 14
+print_stmt           : 6
+printable            : 14 15
+program              : 0
+statement            : 2 3
+statements           : 1 2
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . PROGRAM ID statements END
+
+    PROGRAM         shift and go to state 2
+
+    program                        shift and go to state 1
+
+state 1
+
+    (0) S' -> program .
+
+
+
+state 2
+
+    (1) program -> PROGRAM . ID statements END
+
+    ID              shift and go to state 3
+
+
+state 3
+
+    (1) program -> PROGRAM ID . statements END
+    (2) statements -> . statements statement
+    (3) statements -> . statement
+    (4) statement -> . declaration
+    (5) statement -> . assignment
+    (6) statement -> . print_stmt
+    (7) declaration -> . INTEGER id_list
+    (8) declaration -> . REAL id_list
+    (9) declaration -> . LOGICAL id_list
+    (12) assignment -> . ID ASSIGN expression
+    (13) print_stmt -> . PRINT TIMES COMMA print_list
+
+    INTEGER         shift and go to state 10
+    REAL            shift and go to state 11
+    LOGICAL         shift and go to state 12
+    ID              shift and go to state 4
+    PRINT           shift and go to state 13
+
+    statements                     shift and go to state 5
+    statement                      shift and go to state 6
+    declaration                    shift and go to state 7
+    assignment                     shift and go to state 8
+    print_stmt                     shift and go to state 9
+
+state 4
+
+    (12) assignment -> ID . ASSIGN expression
+
+    ASSIGN          shift and go to state 14
+
+
+state 5
+
+    (1) program -> PROGRAM ID statements . END
+    (2) statements -> statements . statement
+    (4) statement -> . declaration
+    (5) statement -> . assignment
+    (6) statement -> . print_stmt
+    (7) declaration -> . INTEGER id_list
+    (8) declaration -> . REAL id_list
+    (9) declaration -> . LOGICAL id_list
+    (12) assignment -> . ID ASSIGN expression
+    (13) print_stmt -> . PRINT TIMES COMMA print_list
+
+    END             shift and go to state 15
+    INTEGER         shift and go to state 10
+    REAL            shift and go to state 11
+    LOGICAL         shift and go to state 12
+    ID              shift and go to state 4
+    PRINT           shift and go to state 13
+
+    statement                      shift and go to state 16
+    declaration                    shift and go to state 7
+    assignment                     shift and go to state 8
+    print_stmt                     shift and go to state 9
+
+state 6
+
+    (3) statements -> statement .
+
+    END             reduce using rule 3 (statements -> statement .)
+    INTEGER         reduce using rule 3 (statements -> statement .)
+    REAL            reduce using rule 3 (statements -> statement .)
+    LOGICAL         reduce using rule 3 (statements -> statement .)
+    ID              reduce using rule 3 (statements -> statement .)
+    PRINT           reduce using rule 3 (statements -> statement .)
+
+
+state 7
+
+    (4) statement -> declaration .
+
+    END             reduce using rule 4 (statement -> declaration .)
+    INTEGER         reduce using rule 4 (statement -> declaration .)
+    REAL            reduce using rule 4 (statement -> declaration .)
+    LOGICAL         reduce using rule 4 (statement -> declaration .)
+    ID              reduce using rule 4 (statement -> declaration .)
+    PRINT           reduce using rule 4 (statement -> declaration .)
+
+
+state 8
+
+    (5) statement -> assignment .
+
+    END             reduce using rule 5 (statement -> assignment .)
+    INTEGER         reduce using rule 5 (statement -> assignment .)
+    REAL            reduce using rule 5 (statement -> assignment .)
+    LOGICAL         reduce using rule 5 (statement -> assignment .)
+    ID              reduce using rule 5 (statement -> assignment .)
+    PRINT           reduce using rule 5 (statement -> assignment .)
+
+
+state 9
+
+    (6) statement -> print_stmt .
+
+    END             reduce using rule 6 (statement -> print_stmt .)
+    INTEGER         reduce using rule 6 (statement -> print_stmt .)
+    REAL            reduce using rule 6 (statement -> print_stmt .)
+    LOGICAL         reduce using rule 6 (statement -> print_stmt .)
+    ID              reduce using rule 6 (statement -> print_stmt .)
+    PRINT           reduce using rule 6 (statement -> print_stmt .)
+
+
+state 10
+
+    (7) declaration -> INTEGER . id_list
+    (10) id_list -> . id_list COMMA ID
+    (11) id_list -> . ID
+
+    ID              shift and go to state 18
+
+    id_list                        shift and go to state 17
+
+state 11
+
+    (8) declaration -> REAL . id_list
+    (10) id_list -> . id_list COMMA ID
+    (11) id_list -> . ID
+
+    ID              shift and go to state 18
+
+    id_list                        shift and go to state 19
+
+state 12
+
+    (9) declaration -> LOGICAL . id_list
+    (10) id_list -> . id_list COMMA ID
+    (11) id_list -> . ID
+
+    ID              shift and go to state 18
+
+    id_list                        shift and go to state 20
+
+state 13
+
+    (13) print_stmt -> PRINT . TIMES COMMA print_list
+
+    TIMES           shift and go to state 21
+
+
+state 14
+
+    (12) assignment -> ID ASSIGN . expression
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    expression                     shift and go to state 23
+
+state 15
+
+    (1) program -> PROGRAM ID statements END .
+
+    $end            reduce using rule 1 (program -> PROGRAM ID statements END .)
+
+
+state 16
+
+    (2) statements -> statements statement .
+
+    END             reduce using rule 2 (statements -> statements statement .)
+    INTEGER         reduce using rule 2 (statements -> statements statement .)
+    REAL            reduce using rule 2 (statements -> statements statement .)
+    LOGICAL         reduce using rule 2 (statements -> statements statement .)
+    ID              reduce using rule 2 (statements -> statements statement .)
+    PRINT           reduce using rule 2 (statements -> statements statement .)
+
+
+state 17
+
+    (7) declaration -> INTEGER id_list .
+    (10) id_list -> id_list . COMMA ID
+
+    END             reduce using rule 7 (declaration -> INTEGER id_list .)
+    INTEGER         reduce using rule 7 (declaration -> INTEGER id_list .)
+    REAL            reduce using rule 7 (declaration -> INTEGER id_list .)
+    LOGICAL         reduce using rule 7 (declaration -> INTEGER id_list .)
+    ID              reduce using rule 7 (declaration -> INTEGER id_list .)
+    PRINT           reduce using rule 7 (declaration -> INTEGER id_list .)
+    COMMA           shift and go to state 28
+
+
+state 18
+
+    (11) id_list -> ID .
+
+    COMMA           reduce using rule 11 (id_list -> ID .)
+    END             reduce using rule 11 (id_list -> ID .)
+    INTEGER         reduce using rule 11 (id_list -> ID .)
+    REAL            reduce using rule 11 (id_list -> ID .)
+    LOGICAL         reduce using rule 11 (id_list -> ID .)
+    ID              reduce using rule 11 (id_list -> ID .)
+    PRINT           reduce using rule 11 (id_list -> ID .)
+
+
+state 19
+
+    (8) declaration -> REAL id_list .
+    (10) id_list -> id_list . COMMA ID
+
+    END             reduce using rule 8 (declaration -> REAL id_list .)
+    INTEGER         reduce using rule 8 (declaration -> REAL id_list .)
+    REAL            reduce using rule 8 (declaration -> REAL id_list .)
+    LOGICAL         reduce using rule 8 (declaration -> REAL id_list .)
+    ID              reduce using rule 8 (declaration -> REAL id_list .)
+    PRINT           reduce using rule 8 (declaration -> REAL id_list .)
+    COMMA           shift and go to state 28
+
+
+state 20
+
+    (9) declaration -> LOGICAL id_list .
+    (10) id_list -> id_list . COMMA ID
+
+    END             reduce using rule 9 (declaration -> LOGICAL id_list .)
+    INTEGER         reduce using rule 9 (declaration -> LOGICAL id_list .)
+    REAL            reduce using rule 9 (declaration -> LOGICAL id_list .)
+    LOGICAL         reduce using rule 9 (declaration -> LOGICAL id_list .)
+    ID              reduce using rule 9 (declaration -> LOGICAL id_list .)
+    PRINT           reduce using rule 9 (declaration -> LOGICAL id_list .)
+    COMMA           shift and go to state 28
+
+
+state 21
+
+    (13) print_stmt -> PRINT TIMES . COMMA print_list
+
+    COMMA           shift and go to state 29
+
+
+state 22
+
+    (24) expression -> ID .
+
+    PLUS            reduce using rule 24 (expression -> ID .)
+    MINUS           reduce using rule 24 (expression -> ID .)
+    TIMES           reduce using rule 24 (expression -> ID .)
+    DIVIDE          reduce using rule 24 (expression -> ID .)
+    END             reduce using rule 24 (expression -> ID .)
+    INTEGER         reduce using rule 24 (expression -> ID .)
+    REAL            reduce using rule 24 (expression -> ID .)
+    LOGICAL         reduce using rule 24 (expression -> ID .)
+    ID              reduce using rule 24 (expression -> ID .)
+    PRINT           reduce using rule 24 (expression -> ID .)
+    RPAREN          reduce using rule 24 (expression -> ID .)
+    COMMA           reduce using rule 24 (expression -> ID .)
+
+
+state 23
+
+    (12) assignment -> ID ASSIGN expression .
+    (18) expression -> expression . PLUS expression
+    (19) expression -> expression . MINUS expression
+    (20) expression -> expression . TIMES expression
+    (21) expression -> expression . DIVIDE expression
+
+    END             reduce using rule 12 (assignment -> ID ASSIGN expression .)
+    INTEGER         reduce using rule 12 (assignment -> ID ASSIGN expression .)
+    REAL            reduce using rule 12 (assignment -> ID ASSIGN expression .)
+    LOGICAL         reduce using rule 12 (assignment -> ID ASSIGN expression .)
+    ID              reduce using rule 12 (assignment -> ID ASSIGN expression .)
+    PRINT           reduce using rule 12 (assignment -> ID ASSIGN expression .)
+    PLUS            shift and go to state 30
+    MINUS           shift and go to state 31
+    TIMES           shift and go to state 32
+    DIVIDE          shift and go to state 33
+
+
+state 24
+
+    (22) expression -> LPAREN . expression RPAREN
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    expression                     shift and go to state 34
+
+state 25
+
+    (23) expression -> NUMBER .
+
+    PLUS            reduce using rule 23 (expression -> NUMBER .)
+    MINUS           reduce using rule 23 (expression -> NUMBER .)
+    TIMES           reduce using rule 23 (expression -> NUMBER .)
+    DIVIDE          reduce using rule 23 (expression -> NUMBER .)
+    END             reduce using rule 23 (expression -> NUMBER .)
+    INTEGER         reduce using rule 23 (expression -> NUMBER .)
+    REAL            reduce using rule 23 (expression -> NUMBER .)
+    LOGICAL         reduce using rule 23 (expression -> NUMBER .)
+    ID              reduce using rule 23 (expression -> NUMBER .)
+    PRINT           reduce using rule 23 (expression -> NUMBER .)
+    RPAREN          reduce using rule 23 (expression -> NUMBER .)
+    COMMA           reduce using rule 23 (expression -> NUMBER .)
+
+
+state 26
+
+    (25) expression -> DOT_TRUE .
+
+    PLUS            reduce using rule 25 (expression -> DOT_TRUE .)
+    MINUS           reduce using rule 25 (expression -> DOT_TRUE .)
+    TIMES           reduce using rule 25 (expression -> DOT_TRUE .)
+    DIVIDE          reduce using rule 25 (expression -> DOT_TRUE .)
+    END             reduce using rule 25 (expression -> DOT_TRUE .)
+    INTEGER         reduce using rule 25 (expression -> DOT_TRUE .)
+    REAL            reduce using rule 25 (expression -> DOT_TRUE .)
+    LOGICAL         reduce using rule 25 (expression -> DOT_TRUE .)
+    ID              reduce using rule 25 (expression -> DOT_TRUE .)
+    PRINT           reduce using rule 25 (expression -> DOT_TRUE .)
+    RPAREN          reduce using rule 25 (expression -> DOT_TRUE .)
+    COMMA           reduce using rule 25 (expression -> DOT_TRUE .)
+
+
+state 27
+
+    (26) expression -> DOT_FALSE .
+
+    PLUS            reduce using rule 26 (expression -> DOT_FALSE .)
+    MINUS           reduce using rule 26 (expression -> DOT_FALSE .)
+    TIMES           reduce using rule 26 (expression -> DOT_FALSE .)
+    DIVIDE          reduce using rule 26 (expression -> DOT_FALSE .)
+    END             reduce using rule 26 (expression -> DOT_FALSE .)
+    INTEGER         reduce using rule 26 (expression -> DOT_FALSE .)
+    REAL            reduce using rule 26 (expression -> DOT_FALSE .)
+    LOGICAL         reduce using rule 26 (expression -> DOT_FALSE .)
+    ID              reduce using rule 26 (expression -> DOT_FALSE .)
+    PRINT           reduce using rule 26 (expression -> DOT_FALSE .)
+    RPAREN          reduce using rule 26 (expression -> DOT_FALSE .)
+    COMMA           reduce using rule 26 (expression -> DOT_FALSE .)
+
+
+state 28
+
+    (10) id_list -> id_list COMMA . ID
+
+    ID              shift and go to state 35
+
+
+state 29
+
+    (13) print_stmt -> PRINT TIMES COMMA . print_list
+    (14) print_list -> . print_list COMMA printable
+    (15) print_list -> . printable
+    (16) printable -> . expression
+    (17) printable -> . STRING
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    STRING          shift and go to state 39
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    print_list                     shift and go to state 36
+    printable                      shift and go to state 37
+    expression                     shift and go to state 38
+
+state 30
+
+    (18) expression -> expression PLUS . expression
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    expression                     shift and go to state 40
+
+state 31
+
+    (19) expression -> expression MINUS . expression
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    expression                     shift and go to state 41
+
+state 32
+
+    (20) expression -> expression TIMES . expression
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    expression                     shift and go to state 42
+
+state 33
+
+    (21) expression -> expression DIVIDE . expression
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    expression                     shift and go to state 43
+
+state 34
+
+    (22) expression -> LPAREN expression . RPAREN
+    (18) expression -> expression . PLUS expression
+    (19) expression -> expression . MINUS expression
+    (20) expression -> expression . TIMES expression
+    (21) expression -> expression . DIVIDE expression
+
+    RPAREN          shift and go to state 44
+    PLUS            shift and go to state 30
+    MINUS           shift and go to state 31
+    TIMES           shift and go to state 32
+    DIVIDE          shift and go to state 33
+
+
+state 35
+
+    (10) id_list -> id_list COMMA ID .
+
+    COMMA           reduce using rule 10 (id_list -> id_list COMMA ID .)
+    END             reduce using rule 10 (id_list -> id_list COMMA ID .)
+    INTEGER         reduce using rule 10 (id_list -> id_list COMMA ID .)
+    REAL            reduce using rule 10 (id_list -> id_list COMMA ID .)
+    LOGICAL         reduce using rule 10 (id_list -> id_list COMMA ID .)
+    ID              reduce using rule 10 (id_list -> id_list COMMA ID .)
+    PRINT           reduce using rule 10 (id_list -> id_list COMMA ID .)
+
+
+state 36
+
+    (13) print_stmt -> PRINT TIMES COMMA print_list .
+    (14) print_list -> print_list . COMMA printable
+
+    END             reduce using rule 13 (print_stmt -> PRINT TIMES COMMA print_list .)
+    INTEGER         reduce using rule 13 (print_stmt -> PRINT TIMES COMMA print_list .)
+    REAL            reduce using rule 13 (print_stmt -> PRINT TIMES COMMA print_list .)
+    LOGICAL         reduce using rule 13 (print_stmt -> PRINT TIMES COMMA print_list .)
+    ID              reduce using rule 13 (print_stmt -> PRINT TIMES COMMA print_list .)
+    PRINT           reduce using rule 13 (print_stmt -> PRINT TIMES COMMA print_list .)
+    COMMA           shift and go to state 45
+
+
+state 37
+
+    (15) print_list -> printable .
+
+    COMMA           reduce using rule 15 (print_list -> printable .)
+    END             reduce using rule 15 (print_list -> printable .)
+    INTEGER         reduce using rule 15 (print_list -> printable .)
+    REAL            reduce using rule 15 (print_list -> printable .)
+    LOGICAL         reduce using rule 15 (print_list -> printable .)
+    ID              reduce using rule 15 (print_list -> printable .)
+    PRINT           reduce using rule 15 (print_list -> printable .)
+
+
+state 38
+
+    (16) printable -> expression .
+    (18) expression -> expression . PLUS expression
+    (19) expression -> expression . MINUS expression
+    (20) expression -> expression . TIMES expression
+    (21) expression -> expression . DIVIDE expression
+
+    COMMA           reduce using rule 16 (printable -> expression .)
+    END             reduce using rule 16 (printable -> expression .)
+    INTEGER         reduce using rule 16 (printable -> expression .)
+    REAL            reduce using rule 16 (printable -> expression .)
+    LOGICAL         reduce using rule 16 (printable -> expression .)
+    ID              reduce using rule 16 (printable -> expression .)
+    PRINT           reduce using rule 16 (printable -> expression .)
+    PLUS            shift and go to state 30
+    MINUS           shift and go to state 31
+    TIMES           shift and go to state 32
+    DIVIDE          shift and go to state 33
+
+
+state 39
+
+    (17) printable -> STRING .
+
+    COMMA           reduce using rule 17 (printable -> STRING .)
+    END             reduce using rule 17 (printable -> STRING .)
+    INTEGER         reduce using rule 17 (printable -> STRING .)
+    REAL            reduce using rule 17 (printable -> STRING .)
+    LOGICAL         reduce using rule 17 (printable -> STRING .)
+    ID              reduce using rule 17 (printable -> STRING .)
+    PRINT           reduce using rule 17 (printable -> STRING .)
+
+
+state 40
+
+    (18) expression -> expression PLUS expression .
+    (18) expression -> expression . PLUS expression
+    (19) expression -> expression . MINUS expression
+    (20) expression -> expression . TIMES expression
+    (21) expression -> expression . DIVIDE expression
+
+    PLUS            reduce using rule 18 (expression -> expression PLUS expression .)
+    MINUS           reduce using rule 18 (expression -> expression PLUS expression .)
+    END             reduce using rule 18 (expression -> expression PLUS expression .)
+    INTEGER         reduce using rule 18 (expression -> expression PLUS expression .)
+    REAL            reduce using rule 18 (expression -> expression PLUS expression .)
+    LOGICAL         reduce using rule 18 (expression -> expression PLUS expression .)
+    ID              reduce using rule 18 (expression -> expression PLUS expression .)
+    PRINT           reduce using rule 18 (expression -> expression PLUS expression .)
+    RPAREN          reduce using rule 18 (expression -> expression PLUS expression .)
+    COMMA           reduce using rule 18 (expression -> expression PLUS expression .)
+    TIMES           shift and go to state 32
+    DIVIDE          shift and go to state 33
+
+  ! TIMES           [ reduce using rule 18 (expression -> expression PLUS expression .) ]
+  ! DIVIDE          [ reduce using rule 18 (expression -> expression PLUS expression .) ]
+  ! PLUS            [ shift and go to state 30 ]
+  ! MINUS           [ shift and go to state 31 ]
+
+
+state 41
+
+    (19) expression -> expression MINUS expression .
+    (18) expression -> expression . PLUS expression
+    (19) expression -> expression . MINUS expression
+    (20) expression -> expression . TIMES expression
+    (21) expression -> expression . DIVIDE expression
+
+    PLUS            reduce using rule 19 (expression -> expression MINUS expression .)
+    MINUS           reduce using rule 19 (expression -> expression MINUS expression .)
+    END             reduce using rule 19 (expression -> expression MINUS expression .)
+    INTEGER         reduce using rule 19 (expression -> expression MINUS expression .)
+    REAL            reduce using rule 19 (expression -> expression MINUS expression .)
+    LOGICAL         reduce using rule 19 (expression -> expression MINUS expression .)
+    ID              reduce using rule 19 (expression -> expression MINUS expression .)
+    PRINT           reduce using rule 19 (expression -> expression MINUS expression .)
+    RPAREN          reduce using rule 19 (expression -> expression MINUS expression .)
+    COMMA           reduce using rule 19 (expression -> expression MINUS expression .)
+    TIMES           shift and go to state 32
+    DIVIDE          shift and go to state 33
+
+  ! TIMES           [ reduce using rule 19 (expression -> expression MINUS expression .) ]
+  ! DIVIDE          [ reduce using rule 19 (expression -> expression MINUS expression .) ]
+  ! PLUS            [ shift and go to state 30 ]
+  ! MINUS           [ shift and go to state 31 ]
+
+
+state 42
+
+    (20) expression -> expression TIMES expression .
+    (18) expression -> expression . PLUS expression
+    (19) expression -> expression . MINUS expression
+    (20) expression -> expression . TIMES expression
+    (21) expression -> expression . DIVIDE expression
+
+    PLUS            reduce using rule 20 (expression -> expression TIMES expression .)
+    MINUS           reduce using rule 20 (expression -> expression TIMES expression .)
+    TIMES           reduce using rule 20 (expression -> expression TIMES expression .)
+    DIVIDE          reduce using rule 20 (expression -> expression TIMES expression .)
+    END             reduce using rule 20 (expression -> expression TIMES expression .)
+    INTEGER         reduce using rule 20 (expression -> expression TIMES expression .)
+    REAL            reduce using rule 20 (expression -> expression TIMES expression .)
+    LOGICAL         reduce using rule 20 (expression -> expression TIMES expression .)
+    ID              reduce using rule 20 (expression -> expression TIMES expression .)
+    PRINT           reduce using rule 20 (expression -> expression TIMES expression .)
+    RPAREN          reduce using rule 20 (expression -> expression TIMES expression .)
+    COMMA           reduce using rule 20 (expression -> expression TIMES expression .)
+
+  ! PLUS            [ shift and go to state 30 ]
+  ! MINUS           [ shift and go to state 31 ]
+  ! TIMES           [ shift and go to state 32 ]
+  ! DIVIDE          [ shift and go to state 33 ]
+
+
+state 43
+
+    (21) expression -> expression DIVIDE expression .
+    (18) expression -> expression . PLUS expression
+    (19) expression -> expression . MINUS expression
+    (20) expression -> expression . TIMES expression
+    (21) expression -> expression . DIVIDE expression
+
+    PLUS            reduce using rule 21 (expression -> expression DIVIDE expression .)
+    MINUS           reduce using rule 21 (expression -> expression DIVIDE expression .)
+    TIMES           reduce using rule 21 (expression -> expression DIVIDE expression .)
+    DIVIDE          reduce using rule 21 (expression -> expression DIVIDE expression .)
+    END             reduce using rule 21 (expression -> expression DIVIDE expression .)
+    INTEGER         reduce using rule 21 (expression -> expression DIVIDE expression .)
+    REAL            reduce using rule 21 (expression -> expression DIVIDE expression .)
+    LOGICAL         reduce using rule 21 (expression -> expression DIVIDE expression .)
+    ID              reduce using rule 21 (expression -> expression DIVIDE expression .)
+    PRINT           reduce using rule 21 (expression -> expression DIVIDE expression .)
+    RPAREN          reduce using rule 21 (expression -> expression DIVIDE expression .)
+    COMMA           reduce using rule 21 (expression -> expression DIVIDE expression .)
+
+  ! PLUS            [ shift and go to state 30 ]
+  ! MINUS           [ shift and go to state 31 ]
+  ! TIMES           [ shift and go to state 32 ]
+  ! DIVIDE          [ shift and go to state 33 ]
+
+
+state 44
+
+    (22) expression -> LPAREN expression RPAREN .
+
+    PLUS            reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    MINUS           reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    TIMES           reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    DIVIDE          reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    END             reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    INTEGER         reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    REAL            reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    LOGICAL         reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    ID              reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    PRINT           reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+    COMMA           reduce using rule 22 (expression -> LPAREN expression RPAREN .)
+
+
+state 45
+
+    (14) print_list -> print_list COMMA . printable
+    (16) printable -> . expression
+    (17) printable -> . STRING
+    (18) expression -> . expression PLUS expression
+    (19) expression -> . expression MINUS expression
+    (20) expression -> . expression TIMES expression
+    (21) expression -> . expression DIVIDE expression
+    (22) expression -> . LPAREN expression RPAREN
+    (23) expression -> . NUMBER
+    (24) expression -> . ID
+    (25) expression -> . DOT_TRUE
+    (26) expression -> . DOT_FALSE
+
+    STRING          shift and go to state 39
+    LPAREN          shift and go to state 24
+    NUMBER          shift and go to state 25
+    ID              shift and go to state 22
+    DOT_TRUE        shift and go to state 26
+    DOT_FALSE       shift and go to state 27
+
+    printable                      shift and go to state 46
+    expression                     shift and go to state 38
+
+state 46
+
+    (14) print_list -> print_list COMMA printable .
+
+    COMMA           reduce using rule 14 (print_list -> print_list COMMA printable .)
+    END             reduce using rule 14 (print_list -> print_list COMMA printable .)
+    INTEGER         reduce using rule 14 (print_list -> print_list COMMA printable .)
+    REAL            reduce using rule 14 (print_list -> print_list COMMA printable .)
+    LOGICAL         reduce using rule 14 (print_list -> print_list COMMA printable .)
+    ID              reduce using rule 14 (print_list -> print_list COMMA printable .)
+    PRINT           reduce using rule 14 (print_list -> print_list COMMA printable .)
+
