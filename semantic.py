@@ -19,6 +19,49 @@ def add_error(msg, errors, reported):
         errors.append(msg)
         reported.add(msg)
 
+def get_symbol_info(name, symbols):
+    info = symbols.get(name)
+
+    if info is None:
+        return None
+
+    if isinstance(info, str):
+        return {'kind': 'scalar', 'type': info}
+
+    return info
+
+
+def get_decl_info(item, var_type):
+    if isinstance(item, tuple):
+        if item[0] == 'scalar':
+            return item[1], {'kind': 'scalar', 'type': var_type}
+        if item[0] == 'array':
+            return item[1], {'kind': 'array', 'type': var_type, 'size': item[2]}
+
+    return item, {'kind': 'scalar', 'type': var_type}
+
+
+def check_array_access(expr, symbols, errors, reported):
+    _, name, index_expr = expr
+    info = get_symbol_info(name, symbols)
+
+    if info is None:
+        add_error(f"Variável '{name}' usada sem declaração", errors, reported)
+        infer_type(index_expr, symbols, errors, reported)
+        return None
+
+    if info['kind'] != 'array':
+        add_error(f"Variável escalar '{name}' não pode ser indexada", errors, reported)
+        infer_type(index_expr, symbols, errors, reported)
+        return None
+
+    index_type = infer_type(index_expr, symbols, errors, reported)
+    if index_type == 'LOGICAL':
+        add_error(f"Índice do array '{name}' deve ser numérico", errors, reported)
+
+    return info['type']
+
+
 def collect_labels(statements, labels=None):
     if labels is None:
         labels = set()
@@ -46,26 +89,48 @@ def check_statement(stmt, symbols, errors, reported, labels):
 
     if kind == 'declare':
         _, var_type, ids = stmt
-        for var in ids:
-            if var in symbols:
-                add_error(f"Variável '{var}' declarada mais do que uma vez", errors, reported)
+        for item in ids:
+            name, info = get_decl_info(item, var_type)
+
+            if name in symbols:
+                add_error(f"Variável '{name}' declarada mais do que uma vez", errors, reported)
             else:
-                symbols[var] = var_type
+                symbols[name] = info
+
+            if info['kind'] == 'array':
+                size = info['size']
+                if not isinstance(size, int) or size <= 0:
+                    add_error(f"Tamanho do array '{name}' deve ser inteiro positivo", errors, reported)
 
     elif kind == 'assign':
-        _, var, expr = stmt
+        _, target, expr = stmt
 
-        if var not in symbols:
-            add_error(f"Variável '{var}' usada sem declaração", errors, reported)
+        if isinstance(target, tuple) and target[0] == 'array_access':
+            target_type = check_array_access(target, symbols, errors, reported)
+        else:
+            info = get_symbol_info(target, symbols)
+
+            if info is None:
+                add_error(f"Variável '{target}' usada sem declaração", errors, reported)
+                check_expression(expr, symbols, errors, reported)
+                return
+
+            if info['kind'] != 'scalar':
+                add_error(f"Array '{target}' usado sem índice na atribuição", errors, reported)
+                check_expression(expr, symbols, errors, reported)
+                return
+
+            target_type = info['type']
+
+        expr_type = infer_type(expr, symbols, errors, reported)
+
+        if target_type is None:
             check_expression(expr, symbols, errors, reported)
             return
 
-        expr_type = infer_type(expr, symbols, errors, reported)
-        var_type = symbols[var]
-
-        if expr_type is not None and not compatible_types(var_type, expr_type):
+        if expr_type is not None and not compatible_types(target_type, expr_type):
             add_error(
-                f"Incompatibilidade de tipos na atribuição a '{var}': {var_type} <- {expr_type}",
+                f"Incompatibilidade de tipos na atribuição: {target_type} <- {expr_type}",
                 errors,
                 reported
             )
@@ -78,9 +143,15 @@ def check_statement(stmt, symbols, errors, reported, labels):
 
     elif kind == 'read':
         _, ids = stmt
-        for var in ids:
-            if var not in symbols:
-                add_error(f"Variável '{var}' usada sem declaração", errors, reported)
+        for target in ids:
+            if isinstance(target, tuple) and target[0] == 'array_access':
+                check_array_access(target, symbols, errors, reported)
+            else:
+                info = get_symbol_info(target, symbols)
+                if info is None:
+                    add_error(f"Variável '{target}' usada sem declaração", errors, reported)
+                elif info['kind'] != 'scalar':
+                    add_error(f"Array '{target}' usado sem índice no READ", errors, reported)
 
     elif kind == 'if':
         _, cond, then_statements, else_statements = stmt
@@ -99,10 +170,12 @@ def check_statement(stmt, symbols, errors, reported, labels):
     elif kind == 'do':
         _, label, var, start_expr, end_expr, body_statements = stmt
 
-        if var not in symbols:
+        info = get_symbol_info(var, symbols)
+
+        if info is None:
             add_error(f"Variável de controlo '{var}' usada sem declaração", errors, reported)
-        elif symbols[var] == 'LOGICAL':
-            add_error(f"Variável de controlo '{var}' do DO deve ser numérica", errors, reported)
+        elif info['kind'] != 'scalar' or info['type'] == 'LOGICAL':
+            add_error(f"Variável de controlo '{var}' do DO deve ser escalar numérica", errors, reported)
 
         start_type = infer_type(start_expr, symbols, errors, reported)
         if start_type == 'LOGICAL':
@@ -132,9 +205,10 @@ def check_expression(expr, symbols, errors, reported):
         return
 
     if kind == 'id':
-        var = expr[1]
-        if var not in symbols:
-            add_error(f"Variável '{var}' usada sem declaração", errors, reported)
+        infer_type(expr, symbols, errors, reported)
+
+    elif kind == 'array_access':
+        check_array_access(expr, symbols, errors, reported)
 
     elif kind == 'binop':
         _, op, left, right = expr
@@ -157,10 +231,20 @@ def infer_type(expr, symbols, errors, reported):
 
     if kind == 'id':
         var = expr[1]
-        if var not in symbols:
+        info = get_symbol_info(var, symbols)
+
+        if info is None:
             add_error(f"Variável '{var}' usada sem declaração", errors, reported)
             return None
-        return symbols[var]
+
+        if info['kind'] != 'scalar':
+            add_error(f"Array '{var}' usado sem índice em expressão", errors, reported)
+            return None
+
+        return info['type']
+
+    if kind == 'array_access':
+        return check_array_access(expr, symbols, errors, reported)
 
     if kind == 'binop':
         _, op, left, right = expr

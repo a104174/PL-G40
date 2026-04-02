@@ -50,29 +50,40 @@ def p_statement_goto(p):
 
 # Declarações
 def p_declaration_integer(p):
-    'declaration : INTEGER id_list'
+    'declaration : INTEGER decl_list'
     p[0] = ('declare', 'INTEGER', p[2])
 
 def p_declaration_real(p):
-    'declaration : REAL id_list'
+    'declaration : REAL decl_list'
     p[0] = ('declare', 'REAL', p[2])
 
 def p_declaration_logical(p):
-    'declaration : LOGICAL id_list'
+    'declaration : LOGICAL decl_list'
     p[0] = ('declare', 'LOGICAL', p[2])
 
-# Lista de identificadores
-def p_id_list_multiple(p):
-    'id_list : id_list COMMA ID'
+# Lista de declarações
+def p_decl_list_multiple(p):
+    'decl_list : decl_list COMMA decl_item'
     p[0] = p[1] + [p[3]]
 
-def p_id_list_single(p):
-    'id_list : ID'
+def p_decl_list_single(p):
+    'decl_list : decl_item'
     p[0] = [p[1]]
+
+def p_decl_item_scalar(p):
+    'decl_item : ID'
+    p[0] = ('scalar', p[1])
+
+def p_decl_item_array(p):
+    'decl_item : ID LPAREN NUMBER RPAREN'
+    p[0] = ('array', p[1], p[3])
 
 # Atribuição
 def p_assignment(p):
-    'assignment : ID ASSIGN expression'
+    '''
+    assignment : ID ASSIGN expression
+               | array_access ASSIGN expression
+    '''
     p[0] = ('assign', p[1], p[3])
 
 # PRINT *, ...
@@ -81,7 +92,7 @@ def p_print_stmt(p):
     p[0] = ('print', p[4])
 
 def p_read_stmt(p):
-    'read_stmt : READ TIMES COMMA id_list'
+    'read_stmt : READ TIMES COMMA read_list'
     p[0] = ('read', p[4])
 
 def p_if_stmt(p):
@@ -107,6 +118,22 @@ def p_labeled_continue(p):
 def p_goto_stmt(p):
     'goto_stmt : GOTO NUMBER'
     p[0] = ('goto', p[2])
+
+def p_read_list_multiple(p):
+    'read_list : read_list COMMA read_target'
+    p[0] = p[1] + [p[3]]
+
+def p_read_list_single(p):
+    'read_list : read_target'
+    p[0] = [p[1]]
+
+def p_read_target_id(p):
+    'read_target : ID'
+    p[0] = p[1]
+
+def p_read_target_array(p):
+    'read_target : array_access'
+    p[0] = p[1]
 
 def p_do_body_statements_multiple(p):
     'do_body_statements : do_body_statements do_body_statement'
@@ -145,6 +172,10 @@ def p_printable_string(p):
     'printable : STRING'
     p[0] = ('string', p[1])
 
+def p_array_access(p):
+    'array_access : ID LPAREN expression RPAREN'
+    p[0] = ('array_access', p[1], p[3])
+
 # Expressões
 def p_expression_binop(p):
     '''
@@ -166,6 +197,10 @@ def p_expression_number(p):
 def p_expression_id(p):
     'expression : ID'
     p[0] = ('id', p[1])
+
+def p_expression_array_access(p):
+    'expression : array_access'
+    p[0] = p[1]
 
 def p_expression_true(p):
     'expression : DOT_TRUE'

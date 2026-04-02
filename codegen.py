@@ -23,18 +23,39 @@ def user_label(label):
     return f"LBL_{label}"
 
 
+def get_decl_info(item):
+    if isinstance(item, tuple):
+        if item[0] == 'scalar':
+            return 'scalar', item[1], None
+        if item[0] == 'array':
+            return 'array', item[1], item[2]
+
+    return 'scalar', item, None
+
+
 def generate_statement(stmt, code, label_counter):
     kind = stmt[0]
 
     if kind == 'declare':
         _, var_type, ids = stmt
-        for var in ids:
-            code.append(f"DECL {var}")
+        for item in ids:
+            item_kind, name, size = get_decl_info(item)
+            if item_kind == 'array':
+                code.append(f"DECLARR {name} {size}")
+            else:
+                code.append(f"DECL {name}")
 
     elif kind == 'assign':
-        _, var, expr = stmt
-        generate_expression(expr, code)
-        code.append(f"STORE {var}")
+        _, target, expr = stmt
+
+        if isinstance(target, tuple) and target[0] == 'array_access':
+            _, name, index_expr = target
+            generate_expression(index_expr, code)
+            generate_expression(expr, code)
+            code.append(f"STOREARR {name}")
+        else:
+            generate_expression(expr, code)
+            code.append(f"STORE {target}")
 
     elif kind == 'print':
         _, items = stmt
@@ -47,8 +68,13 @@ def generate_statement(stmt, code, label_counter):
 
     elif kind == 'read':
         _, ids = stmt
-        for var in ids:
-            code.append(f"READ {var}")
+        for target in ids:
+            if isinstance(target, tuple) and target[0] == 'array_access':
+                _, name, index_expr = target
+                generate_expression(index_expr, code)
+                code.append(f"READARR {name}")
+            else:
+                code.append(f"READ {target}")
 
     elif kind == 'if':
         _, cond, then_statements, else_statements = stmt
@@ -126,6 +152,11 @@ def generate_expression(expr, code):
 
     elif kind == 'id':
         code.append(f"LOAD {expr[1]}")
+
+    elif kind == 'array_access':
+        _, name, index_expr = expr
+        generate_expression(index_expr, code)
+        code.append(f"LOADARR {name}")
 
     elif kind == 'binop':
         _, op, left, right = expr
