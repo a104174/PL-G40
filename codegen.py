@@ -19,6 +19,10 @@ def new_label(label_counter):
     return label
 
 
+def user_label(label):
+    return f"LBL_{label}"
+
+
 def generate_statement(stmt, code, label_counter):
     kind = stmt[0]
 
@@ -81,7 +85,7 @@ def generate_statement(stmt, code, label_counter):
     elif kind == 'do':
         _, label, var, start_expr, end_expr, body_statements = stmt
         start_label = new_label(label_counter)
-        end_label = new_label(label_counter)
+        end_label = user_label(label)
 
         generate_expression(start_expr, code)
         code.append(f"STORE {var}")
@@ -104,7 +108,11 @@ def generate_statement(stmt, code, label_counter):
 
     elif kind == 'continue':
         _, label = stmt
-        code.append(f"LABEL {label}")
+        code.append(f"LABEL {user_label(label)}")
+
+    elif kind == 'goto':
+        _, label = stmt
+        code.append(f"JMP {user_label(label)}")
 
 def generate_expression(expr, code):
     kind = expr[0]

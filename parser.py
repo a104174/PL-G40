@@ -44,6 +44,10 @@ def p_statement_labeled_continue(p):
     'statement : labeled_continue'
     p[0] = p[1]
 
+def p_statement_goto(p):
+    'statement : goto_stmt'
+    p[0] = p[1]
+
 # Declarações
 def p_declaration_integer(p):
     'declaration : INTEGER id_list'
@@ -100,6 +104,10 @@ def p_labeled_continue(p):
     'labeled_continue : NUMBER CONTINUE'
     p[0] = ('continue', p[1])
 
+def p_goto_stmt(p):
+    'goto_stmt : GOTO NUMBER'
+    p[0] = ('goto', p[2])
+
 def p_do_body_statements_multiple(p):
     'do_body_statements : do_body_statements do_body_statement'
     p[0] = p[1] + [p[2]]
@@ -116,6 +124,7 @@ def p_do_body_statement(p):
                       | read_stmt
                       | if_stmt
                       | do_stmt
+                      | goto_stmt
     '''
     p[0] = p[1]
 

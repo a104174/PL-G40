@@ -6,9 +6,10 @@ def check_program(ast):
     symbols = {}
     errors = []
     reported = set()
+    labels = collect_labels(statements)
 
     for stmt in statements:
-        check_statement(stmt, symbols, errors, reported)
+        check_statement(stmt, symbols, errors, reported, labels)
 
     return symbols, errors
 
@@ -18,7 +19,29 @@ def add_error(msg, errors, reported):
         errors.append(msg)
         reported.add(msg)
 
-def check_statement(stmt, symbols, errors, reported):
+def collect_labels(statements, labels=None):
+    if labels is None:
+        labels = set()
+
+    for stmt in statements:
+        kind = stmt[0]
+
+        if kind == 'continue':
+            labels.add(stmt[1])
+
+        elif kind == 'do':
+            labels.add(stmt[1])
+            collect_labels(stmt[5], labels)
+
+        elif kind == 'if':
+            collect_labels(stmt[2], labels)
+            if stmt[3] is not None:
+                collect_labels(stmt[3], labels)
+
+    return labels
+
+
+def check_statement(stmt, symbols, errors, reported, labels):
     kind = stmt[0]
 
     if kind == 'declare':
@@ -67,11 +90,11 @@ def check_statement(stmt, symbols, errors, reported):
             add_error("Condição do IF deve ser do tipo LOGICAL", errors, reported)
 
         for inner_stmt in then_statements:
-            check_statement(inner_stmt, symbols, errors, reported)
+            check_statement(inner_stmt, symbols, errors, reported, labels)
 
         if else_statements is not None:
             for inner_stmt in else_statements:
-                check_statement(inner_stmt, symbols, errors, reported)
+                check_statement(inner_stmt, symbols, errors, reported, labels)
 
     elif kind == 'do':
         _, label, var, start_expr, end_expr, body_statements = stmt
@@ -90,11 +113,16 @@ def check_statement(stmt, symbols, errors, reported):
             add_error("Expressão final do DO deve ser numérica", errors, reported)
 
         for inner_stmt in body_statements:
-            check_statement(inner_stmt, symbols, errors, reported)
+            check_statement(inner_stmt, symbols, errors, reported, labels)
 
     elif kind == 'continue':
         _, label = stmt
         return
+
+    elif kind == 'goto':
+        _, label = stmt
+        if label not in labels:
+            add_error(f"Label '{label}' usado em GOTO não existe", errors, reported)
 
 
 def check_expression(expr, symbols, errors, reported):
