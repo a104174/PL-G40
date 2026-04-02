@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+# PLY generated files
+parser.out
+parsetab.py
+src/parser.out
+src/parsetab.py
+
+# Test and tooling caches
+.pytest_cache/
+.mypy_cache/
+
