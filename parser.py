@@ -28,6 +28,14 @@ def p_statement_print(p):
     'statement : print_stmt'
     p[0] = p[1]
 
+def p_statement_read(p):
+    'statement : read_stmt'
+    p[0] = p[1]
+
+def p_statement_if(p):
+    'statement : if_stmt'
+    p[0] = p[1]
+
 # Declarações
 def p_declaration_integer(p):
     'declaration : INTEGER id_list'
@@ -59,6 +67,20 @@ def p_assignment(p):
 def p_print_stmt(p):
     'print_stmt : PRINT TIMES COMMA print_list'
     p[0] = ('print', p[4])
+
+def p_read_stmt(p):
+    'read_stmt : READ TIMES COMMA id_list'
+    p[0] = ('read', p[4])
+
+def p_if_stmt(p):
+    '''
+    if_stmt : IF LPAREN condition RPAREN THEN statements ENDIF
+            | IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    '''
+    if len(p) == 8:
+        p[0] = ('if', p[3], p[6], None)
+    else:
+        p[0] = ('if', p[3], p[6], p[8])
 
 # Lista de coisas a imprimir
 def p_print_list_multiple(p):
@@ -107,8 +129,44 @@ def p_expression_false(p):
     'expression : DOT_FALSE'
     p[0] = ('bool', False)
 
+# Condições
+def p_condition_relop(p):
+    '''
+    condition : expression DOT_EQ expression
+              | expression DOT_NE expression
+              | expression DOT_LT expression
+              | expression DOT_LE expression
+              | expression DOT_GT expression
+              | expression DOT_GE expression
+    '''
+    p[0] = ('relop', p[2], p[1], p[3])
+
+def p_condition_binop(p):
+    '''
+    condition : condition DOT_AND condition
+              | condition DOT_OR condition
+    '''
+    p[0] = ('logicop', p[2], p[1], p[3])
+
+def p_condition_not(p):
+    'condition : DOT_NOT condition %prec DOT_NOT'
+    p[0] = ('not', p[2])
+
+def p_condition_group(p):
+    'condition : LPAREN condition RPAREN'
+    p[0] = p[2]
+
+def p_condition_expression(p):
+    'condition : expression %prec COND_EXPR'
+    p[0] = p[1]
+
 # Precedência dos operadores
 precedence = (
+    ('nonassoc', 'COND_EXPR'),
+    ('left', 'DOT_OR'),
+    ('left', 'DOT_AND'),
+    ('right', 'DOT_NOT'),
+    ('nonassoc', 'DOT_EQ', 'DOT_NE', 'DOT_LT', 'DOT_LE', 'DOT_GT', 'DOT_GE'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
 )
