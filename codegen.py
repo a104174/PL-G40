@@ -78,6 +78,34 @@ def generate_statement(stmt, code, label_counter):
 
             code.append(f"LABEL {end_label}")
 
+    elif kind == 'do':
+        _, label, var, start_expr, end_expr, body_statements = stmt
+        start_label = new_label(label_counter)
+        end_label = new_label(label_counter)
+
+        generate_expression(start_expr, code)
+        code.append(f"STORE {var}")
+
+        code.append(f"LABEL {start_label}")
+        code.append(f"LOAD {var}")
+        generate_expression(end_expr, code)
+        code.append("CMPLE")
+        code.append(f"JZ {end_label}")
+
+        for inner_stmt in body_statements:
+            generate_statement(inner_stmt, code, label_counter)
+
+        code.append(f"LOAD {var}")
+        code.append("PUSH 1")
+        code.append("ADD")
+        code.append(f"STORE {var}")
+        code.append(f"JMP {start_label}")
+        code.append(f"LABEL {end_label}")
+
+    elif kind == 'continue':
+        _, label = stmt
+        code.append(f"LABEL {label}")
+
 def generate_expression(expr, code):
     kind = expr[0]
 

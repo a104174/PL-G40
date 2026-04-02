@@ -2,8 +2,6 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
-    CONTINUE
-    DO
     GOTO
 
 Grammar
@@ -17,96 +15,112 @@ Rule 5     statement -> assignment
 Rule 6     statement -> print_stmt
 Rule 7     statement -> read_stmt
 Rule 8     statement -> if_stmt
-Rule 9     declaration -> INTEGER id_list
-Rule 10    declaration -> REAL id_list
-Rule 11    declaration -> LOGICAL id_list
-Rule 12    id_list -> id_list COMMA ID
-Rule 13    id_list -> ID
-Rule 14    assignment -> ID ASSIGN expression
-Rule 15    print_stmt -> PRINT TIMES COMMA print_list
-Rule 16    read_stmt -> READ TIMES COMMA id_list
-Rule 17    if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF
-Rule 18    if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
-Rule 19    print_list -> print_list COMMA printable
-Rule 20    print_list -> printable
-Rule 21    printable -> expression
-Rule 22    printable -> STRING
-Rule 23    expression -> expression PLUS expression
-Rule 24    expression -> expression MINUS expression
-Rule 25    expression -> expression TIMES expression
-Rule 26    expression -> expression DIVIDE expression
-Rule 27    expression -> LPAREN expression RPAREN
-Rule 28    expression -> NUMBER
-Rule 29    expression -> ID
-Rule 30    expression -> DOT_TRUE
-Rule 31    expression -> DOT_FALSE
-Rule 32    condition -> expression DOT_EQ expression
-Rule 33    condition -> expression DOT_NE expression
-Rule 34    condition -> expression DOT_LT expression
-Rule 35    condition -> expression DOT_LE expression
-Rule 36    condition -> expression DOT_GT expression
-Rule 37    condition -> expression DOT_GE expression
-Rule 38    condition -> condition DOT_AND condition
-Rule 39    condition -> condition DOT_OR condition
-Rule 40    condition -> DOT_NOT condition
-Rule 41    condition -> LPAREN condition RPAREN
-Rule 42    condition -> expression
+Rule 9     statement -> do_stmt
+Rule 10    statement -> labeled_continue
+Rule 11    declaration -> INTEGER id_list
+Rule 12    declaration -> REAL id_list
+Rule 13    declaration -> LOGICAL id_list
+Rule 14    id_list -> id_list COMMA ID
+Rule 15    id_list -> ID
+Rule 16    assignment -> ID ASSIGN expression
+Rule 17    print_stmt -> PRINT TIMES COMMA print_list
+Rule 18    read_stmt -> READ TIMES COMMA id_list
+Rule 19    if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF
+Rule 20    if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+Rule 21    do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+Rule 22    labeled_continue -> NUMBER CONTINUE
+Rule 23    do_body_statements -> do_body_statements do_body_statement
+Rule 24    do_body_statements -> do_body_statement
+Rule 25    do_body_statement -> declaration
+Rule 26    do_body_statement -> assignment
+Rule 27    do_body_statement -> print_stmt
+Rule 28    do_body_statement -> read_stmt
+Rule 29    do_body_statement -> if_stmt
+Rule 30    do_body_statement -> do_stmt
+Rule 31    print_list -> print_list COMMA printable
+Rule 32    print_list -> printable
+Rule 33    printable -> expression
+Rule 34    printable -> STRING
+Rule 35    expression -> expression PLUS expression
+Rule 36    expression -> expression MINUS expression
+Rule 37    expression -> expression TIMES expression
+Rule 38    expression -> expression DIVIDE expression
+Rule 39    expression -> LPAREN expression RPAREN
+Rule 40    expression -> NUMBER
+Rule 41    expression -> ID
+Rule 42    expression -> DOT_TRUE
+Rule 43    expression -> DOT_FALSE
+Rule 44    condition -> expression DOT_EQ expression
+Rule 45    condition -> expression DOT_NE expression
+Rule 46    condition -> expression DOT_LT expression
+Rule 47    condition -> expression DOT_LE expression
+Rule 48    condition -> expression DOT_GT expression
+Rule 49    condition -> expression DOT_GE expression
+Rule 50    condition -> condition DOT_AND condition
+Rule 51    condition -> condition DOT_OR condition
+Rule 52    condition -> DOT_NOT condition
+Rule 53    condition -> LPAREN condition RPAREN
+Rule 54    condition -> expression
 
 Terminals, with rules where they appear
 
-ASSIGN               : 14
-COMMA                : 12 15 16 19
-CONTINUE             : 
-DIVIDE               : 26
-DO                   : 
-DOT_AND              : 38
-DOT_EQ               : 32
-DOT_FALSE            : 31
-DOT_GE               : 37
-DOT_GT               : 36
-DOT_LE               : 35
-DOT_LT               : 34
-DOT_NE               : 33
-DOT_NOT              : 40
-DOT_OR               : 39
-DOT_TRUE             : 30
-ELSE                 : 18
+ASSIGN               : 16 21
+COMMA                : 14 17 18 21 31
+CONTINUE             : 22
+DIVIDE               : 38
+DO                   : 21
+DOT_AND              : 50
+DOT_EQ               : 44
+DOT_FALSE            : 43
+DOT_GE               : 49
+DOT_GT               : 48
+DOT_LE               : 47
+DOT_LT               : 46
+DOT_NE               : 45
+DOT_NOT              : 52
+DOT_OR               : 51
+DOT_TRUE             : 42
+ELSE                 : 20
 END                  : 1
-ENDIF                : 17 18
+ENDIF                : 19 20
 GOTO                 : 
-ID                   : 1 12 13 14 29
-IF                   : 17 18
-INTEGER              : 9
-LOGICAL              : 11
-LPAREN               : 17 18 27 41
-MINUS                : 24
-NUMBER               : 28
-PLUS                 : 23
-PRINT                : 15
+ID                   : 1 14 15 16 21 41
+IF                   : 19 20
+INTEGER              : 11
+LOGICAL              : 13
+LPAREN               : 19 20 39 53
+MINUS                : 36
+NUMBER               : 21 22 40
+PLUS                 : 35
+PRINT                : 17
 PROGRAM              : 1
-READ                 : 16
-REAL                 : 10
-RPAREN               : 17 18 27 41
-STRING               : 22
-THEN                 : 17 18
-TIMES                : 15 16 25
+READ                 : 18
+REAL                 : 12
+RPAREN               : 19 20 39 53
+STRING               : 34
+THEN                 : 19 20
+TIMES                : 17 18 37
 error                : 
 
 Nonterminals, with rules where they appear
 
-assignment           : 5
-condition            : 17 18 38 38 39 39 40 41
-declaration          : 4
-expression           : 14 21 23 23 24 24 25 25 26 26 27 32 32 33 33 34 34 35 35 36 36 37 37 42
-id_list              : 9 10 11 12 16
-if_stmt              : 8
-print_list           : 15 19
-print_stmt           : 6
-printable            : 19 20
+assignment           : 5 26
+condition            : 19 20 50 50 51 51 52 53
+declaration          : 4 25
+do_body_statement    : 23 24
+do_body_statements   : 21 23
+do_stmt              : 9 30
+expression           : 16 21 21 33 35 35 36 36 37 37 38 38 39 44 44 45 45 46 46 47 47 48 48 49 49 54
+id_list              : 11 12 13 14 18
+if_stmt              : 8 29
+labeled_continue     : 10 21
+print_list           : 17 31
+print_stmt           : 6 27
+printable            : 31 32
 program              : 0
-read_stmt            : 7
+read_stmt            : 7 28
 statement            : 2 3
-statements           : 1 2 17 18 18
+statements           : 1 2 19 20 20
 
 Parsing method: LALR
 
@@ -142,22 +156,28 @@ state 3
     (6) statement -> . print_stmt
     (7) statement -> . read_stmt
     (8) statement -> . if_stmt
-    (9) declaration -> . INTEGER id_list
-    (10) declaration -> . REAL id_list
-    (11) declaration -> . LOGICAL id_list
-    (14) assignment -> . ID ASSIGN expression
-    (15) print_stmt -> . PRINT TIMES COMMA print_list
-    (16) read_stmt -> . READ TIMES COMMA id_list
-    (17) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (9) statement -> . do_stmt
+    (10) statement -> . labeled_continue
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+    (22) labeled_continue -> . NUMBER CONTINUE
 
-    INTEGER         shift and go to state 12
-    REAL            shift and go to state 13
-    LOGICAL         shift and go to state 14
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
     ID              shift and go to state 4
-    PRINT           shift and go to state 15
-    READ            shift and go to state 16
-    IF              shift and go to state 17
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+    NUMBER          shift and go to state 21
 
     statements                     shift and go to state 5
     statement                      shift and go to state 6
@@ -166,12 +186,14 @@ state 3
     print_stmt                     shift and go to state 9
     read_stmt                      shift and go to state 10
     if_stmt                        shift and go to state 11
+    do_stmt                        shift and go to state 12
+    labeled_continue               shift and go to state 13
 
 state 4
 
-    (14) assignment -> ID . ASSIGN expression
+    (16) assignment -> ID . ASSIGN expression
 
-    ASSIGN          shift and go to state 18
+    ASSIGN          shift and go to state 22
 
 
 state 5
@@ -183,30 +205,38 @@ state 5
     (6) statement -> . print_stmt
     (7) statement -> . read_stmt
     (8) statement -> . if_stmt
-    (9) declaration -> . INTEGER id_list
-    (10) declaration -> . REAL id_list
-    (11) declaration -> . LOGICAL id_list
-    (14) assignment -> . ID ASSIGN expression
-    (15) print_stmt -> . PRINT TIMES COMMA print_list
-    (16) read_stmt -> . READ TIMES COMMA id_list
-    (17) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (9) statement -> . do_stmt
+    (10) statement -> . labeled_continue
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+    (22) labeled_continue -> . NUMBER CONTINUE
 
-    END             shift and go to state 19
-    INTEGER         shift and go to state 12
-    REAL            shift and go to state 13
-    LOGICAL         shift and go to state 14
+    END             shift and go to state 23
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
     ID              shift and go to state 4
-    PRINT           shift and go to state 15
-    READ            shift and go to state 16
-    IF              shift and go to state 17
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+    NUMBER          shift and go to state 21
 
-    statement                      shift and go to state 20
+    statement                      shift and go to state 24
     declaration                    shift and go to state 7
     assignment                     shift and go to state 8
     print_stmt                     shift and go to state 9
     read_stmt                      shift and go to state 10
     if_stmt                        shift and go to state 11
+    do_stmt                        shift and go to state 12
+    labeled_continue               shift and go to state 13
 
 state 6
 
@@ -220,6 +250,8 @@ state 6
     PRINT           reduce using rule 3 (statements -> statement .)
     READ            reduce using rule 3 (statements -> statement .)
     IF              reduce using rule 3 (statements -> statement .)
+    DO              reduce using rule 3 (statements -> statement .)
+    NUMBER          reduce using rule 3 (statements -> statement .)
     ENDIF           reduce using rule 3 (statements -> statement .)
     ELSE            reduce using rule 3 (statements -> statement .)
 
@@ -236,6 +268,8 @@ state 7
     PRINT           reduce using rule 4 (statement -> declaration .)
     READ            reduce using rule 4 (statement -> declaration .)
     IF              reduce using rule 4 (statement -> declaration .)
+    DO              reduce using rule 4 (statement -> declaration .)
+    NUMBER          reduce using rule 4 (statement -> declaration .)
     ENDIF           reduce using rule 4 (statement -> declaration .)
     ELSE            reduce using rule 4 (statement -> declaration .)
 
@@ -252,6 +286,8 @@ state 8
     PRINT           reduce using rule 5 (statement -> assignment .)
     READ            reduce using rule 5 (statement -> assignment .)
     IF              reduce using rule 5 (statement -> assignment .)
+    DO              reduce using rule 5 (statement -> assignment .)
+    NUMBER          reduce using rule 5 (statement -> assignment .)
     ENDIF           reduce using rule 5 (statement -> assignment .)
     ELSE            reduce using rule 5 (statement -> assignment .)
 
@@ -268,6 +304,8 @@ state 9
     PRINT           reduce using rule 6 (statement -> print_stmt .)
     READ            reduce using rule 6 (statement -> print_stmt .)
     IF              reduce using rule 6 (statement -> print_stmt .)
+    DO              reduce using rule 6 (statement -> print_stmt .)
+    NUMBER          reduce using rule 6 (statement -> print_stmt .)
     ENDIF           reduce using rule 6 (statement -> print_stmt .)
     ELSE            reduce using rule 6 (statement -> print_stmt .)
 
@@ -284,6 +322,8 @@ state 10
     PRINT           reduce using rule 7 (statement -> read_stmt .)
     READ            reduce using rule 7 (statement -> read_stmt .)
     IF              reduce using rule 7 (statement -> read_stmt .)
+    DO              reduce using rule 7 (statement -> read_stmt .)
+    NUMBER          reduce using rule 7 (statement -> read_stmt .)
     ENDIF           reduce using rule 7 (statement -> read_stmt .)
     ELSE            reduce using rule 7 (statement -> read_stmt .)
 
@@ -300,91 +340,143 @@ state 11
     PRINT           reduce using rule 8 (statement -> if_stmt .)
     READ            reduce using rule 8 (statement -> if_stmt .)
     IF              reduce using rule 8 (statement -> if_stmt .)
+    DO              reduce using rule 8 (statement -> if_stmt .)
+    NUMBER          reduce using rule 8 (statement -> if_stmt .)
     ENDIF           reduce using rule 8 (statement -> if_stmt .)
     ELSE            reduce using rule 8 (statement -> if_stmt .)
 
 
 state 12
 
-    (9) declaration -> INTEGER . id_list
-    (12) id_list -> . id_list COMMA ID
-    (13) id_list -> . ID
+    (9) statement -> do_stmt .
 
-    ID              shift and go to state 22
+    END             reduce using rule 9 (statement -> do_stmt .)
+    INTEGER         reduce using rule 9 (statement -> do_stmt .)
+    REAL            reduce using rule 9 (statement -> do_stmt .)
+    LOGICAL         reduce using rule 9 (statement -> do_stmt .)
+    ID              reduce using rule 9 (statement -> do_stmt .)
+    PRINT           reduce using rule 9 (statement -> do_stmt .)
+    READ            reduce using rule 9 (statement -> do_stmt .)
+    IF              reduce using rule 9 (statement -> do_stmt .)
+    DO              reduce using rule 9 (statement -> do_stmt .)
+    NUMBER          reduce using rule 9 (statement -> do_stmt .)
+    ENDIF           reduce using rule 9 (statement -> do_stmt .)
+    ELSE            reduce using rule 9 (statement -> do_stmt .)
 
-    id_list                        shift and go to state 21
 
 state 13
 
-    (10) declaration -> REAL . id_list
-    (12) id_list -> . id_list COMMA ID
-    (13) id_list -> . ID
+    (10) statement -> labeled_continue .
 
-    ID              shift and go to state 22
+    END             reduce using rule 10 (statement -> labeled_continue .)
+    INTEGER         reduce using rule 10 (statement -> labeled_continue .)
+    REAL            reduce using rule 10 (statement -> labeled_continue .)
+    LOGICAL         reduce using rule 10 (statement -> labeled_continue .)
+    ID              reduce using rule 10 (statement -> labeled_continue .)
+    PRINT           reduce using rule 10 (statement -> labeled_continue .)
+    READ            reduce using rule 10 (statement -> labeled_continue .)
+    IF              reduce using rule 10 (statement -> labeled_continue .)
+    DO              reduce using rule 10 (statement -> labeled_continue .)
+    NUMBER          reduce using rule 10 (statement -> labeled_continue .)
+    ENDIF           reduce using rule 10 (statement -> labeled_continue .)
+    ELSE            reduce using rule 10 (statement -> labeled_continue .)
 
-    id_list                        shift and go to state 23
 
 state 14
 
-    (11) declaration -> LOGICAL . id_list
-    (12) id_list -> . id_list COMMA ID
-    (13) id_list -> . ID
+    (11) declaration -> INTEGER . id_list
+    (14) id_list -> . id_list COMMA ID
+    (15) id_list -> . ID
 
-    ID              shift and go to state 22
+    ID              shift and go to state 26
 
-    id_list                        shift and go to state 24
+    id_list                        shift and go to state 25
 
 state 15
 
-    (15) print_stmt -> PRINT . TIMES COMMA print_list
+    (12) declaration -> REAL . id_list
+    (14) id_list -> . id_list COMMA ID
+    (15) id_list -> . ID
 
-    TIMES           shift and go to state 25
+    ID              shift and go to state 26
 
+    id_list                        shift and go to state 27
 
 state 16
 
-    (16) read_stmt -> READ . TIMES COMMA id_list
+    (13) declaration -> LOGICAL . id_list
+    (14) id_list -> . id_list COMMA ID
+    (15) id_list -> . ID
 
-    TIMES           shift and go to state 26
+    ID              shift and go to state 26
 
+    id_list                        shift and go to state 28
 
 state 17
 
-    (17) if_stmt -> IF . LPAREN condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> IF . LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (17) print_stmt -> PRINT . TIMES COMMA print_list
 
-    LPAREN          shift and go to state 27
+    TIMES           shift and go to state 29
 
 
 state 18
 
-    (14) assignment -> ID ASSIGN . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (18) read_stmt -> READ . TIMES COMMA id_list
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    TIMES           shift and go to state 30
 
-    expression                     shift and go to state 29
 
 state 19
+
+    (19) if_stmt -> IF . LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> IF . LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+
+    LPAREN          shift and go to state 31
+
+
+state 20
+
+    (21) do_stmt -> DO . NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+
+    NUMBER          shift and go to state 32
+
+
+state 21
+
+    (22) labeled_continue -> NUMBER . CONTINUE
+
+    CONTINUE        shift and go to state 33
+
+
+state 22
+
+    (16) assignment -> ID ASSIGN . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
+
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
+
+    expression                     shift and go to state 35
+
+state 23
 
     (1) program -> PROGRAM ID statements END .
 
     $end            reduce using rule 1 (program -> PROGRAM ID statements END .)
 
 
-state 20
+state 24
 
     (2) statements -> statements statement .
 
@@ -396,1378 +488,1239 @@ state 20
     PRINT           reduce using rule 2 (statements -> statements statement .)
     READ            reduce using rule 2 (statements -> statements statement .)
     IF              reduce using rule 2 (statements -> statements statement .)
+    DO              reduce using rule 2 (statements -> statements statement .)
+    NUMBER          reduce using rule 2 (statements -> statements statement .)
     ENDIF           reduce using rule 2 (statements -> statements statement .)
     ELSE            reduce using rule 2 (statements -> statements statement .)
 
 
-state 21
-
-    (9) declaration -> INTEGER id_list .
-    (12) id_list -> id_list . COMMA ID
-
-    END             reduce using rule 9 (declaration -> INTEGER id_list .)
-    INTEGER         reduce using rule 9 (declaration -> INTEGER id_list .)
-    REAL            reduce using rule 9 (declaration -> INTEGER id_list .)
-    LOGICAL         reduce using rule 9 (declaration -> INTEGER id_list .)
-    ID              reduce using rule 9 (declaration -> INTEGER id_list .)
-    PRINT           reduce using rule 9 (declaration -> INTEGER id_list .)
-    READ            reduce using rule 9 (declaration -> INTEGER id_list .)
-    IF              reduce using rule 9 (declaration -> INTEGER id_list .)
-    ENDIF           reduce using rule 9 (declaration -> INTEGER id_list .)
-    ELSE            reduce using rule 9 (declaration -> INTEGER id_list .)
-    COMMA           shift and go to state 34
-
-
-state 22
-
-    (13) id_list -> ID .
-
-    COMMA           reduce using rule 13 (id_list -> ID .)
-    END             reduce using rule 13 (id_list -> ID .)
-    INTEGER         reduce using rule 13 (id_list -> ID .)
-    REAL            reduce using rule 13 (id_list -> ID .)
-    LOGICAL         reduce using rule 13 (id_list -> ID .)
-    ID              reduce using rule 13 (id_list -> ID .)
-    PRINT           reduce using rule 13 (id_list -> ID .)
-    READ            reduce using rule 13 (id_list -> ID .)
-    IF              reduce using rule 13 (id_list -> ID .)
-    ENDIF           reduce using rule 13 (id_list -> ID .)
-    ELSE            reduce using rule 13 (id_list -> ID .)
-
-
-state 23
-
-    (10) declaration -> REAL id_list .
-    (12) id_list -> id_list . COMMA ID
-
-    END             reduce using rule 10 (declaration -> REAL id_list .)
-    INTEGER         reduce using rule 10 (declaration -> REAL id_list .)
-    REAL            reduce using rule 10 (declaration -> REAL id_list .)
-    LOGICAL         reduce using rule 10 (declaration -> REAL id_list .)
-    ID              reduce using rule 10 (declaration -> REAL id_list .)
-    PRINT           reduce using rule 10 (declaration -> REAL id_list .)
-    READ            reduce using rule 10 (declaration -> REAL id_list .)
-    IF              reduce using rule 10 (declaration -> REAL id_list .)
-    ENDIF           reduce using rule 10 (declaration -> REAL id_list .)
-    ELSE            reduce using rule 10 (declaration -> REAL id_list .)
-    COMMA           shift and go to state 34
-
-
-state 24
-
-    (11) declaration -> LOGICAL id_list .
-    (12) id_list -> id_list . COMMA ID
-
-    END             reduce using rule 11 (declaration -> LOGICAL id_list .)
-    INTEGER         reduce using rule 11 (declaration -> LOGICAL id_list .)
-    REAL            reduce using rule 11 (declaration -> LOGICAL id_list .)
-    LOGICAL         reduce using rule 11 (declaration -> LOGICAL id_list .)
-    ID              reduce using rule 11 (declaration -> LOGICAL id_list .)
-    PRINT           reduce using rule 11 (declaration -> LOGICAL id_list .)
-    READ            reduce using rule 11 (declaration -> LOGICAL id_list .)
-    IF              reduce using rule 11 (declaration -> LOGICAL id_list .)
-    ENDIF           reduce using rule 11 (declaration -> LOGICAL id_list .)
-    ELSE            reduce using rule 11 (declaration -> LOGICAL id_list .)
-    COMMA           shift and go to state 34
-
-
 state 25
 
-    (15) print_stmt -> PRINT TIMES . COMMA print_list
+    (11) declaration -> INTEGER id_list .
+    (14) id_list -> id_list . COMMA ID
 
-    COMMA           shift and go to state 35
+    END             reduce using rule 11 (declaration -> INTEGER id_list .)
+    INTEGER         reduce using rule 11 (declaration -> INTEGER id_list .)
+    REAL            reduce using rule 11 (declaration -> INTEGER id_list .)
+    LOGICAL         reduce using rule 11 (declaration -> INTEGER id_list .)
+    ID              reduce using rule 11 (declaration -> INTEGER id_list .)
+    PRINT           reduce using rule 11 (declaration -> INTEGER id_list .)
+    READ            reduce using rule 11 (declaration -> INTEGER id_list .)
+    IF              reduce using rule 11 (declaration -> INTEGER id_list .)
+    DO              reduce using rule 11 (declaration -> INTEGER id_list .)
+    NUMBER          reduce using rule 11 (declaration -> INTEGER id_list .)
+    ENDIF           reduce using rule 11 (declaration -> INTEGER id_list .)
+    ELSE            reduce using rule 11 (declaration -> INTEGER id_list .)
+    COMMA           shift and go to state 40
 
 
 state 26
 
-    (16) read_stmt -> READ TIMES . COMMA id_list
+    (15) id_list -> ID .
 
-    COMMA           shift and go to state 36
+    COMMA           reduce using rule 15 (id_list -> ID .)
+    END             reduce using rule 15 (id_list -> ID .)
+    INTEGER         reduce using rule 15 (id_list -> ID .)
+    REAL            reduce using rule 15 (id_list -> ID .)
+    LOGICAL         reduce using rule 15 (id_list -> ID .)
+    ID              reduce using rule 15 (id_list -> ID .)
+    PRINT           reduce using rule 15 (id_list -> ID .)
+    READ            reduce using rule 15 (id_list -> ID .)
+    IF              reduce using rule 15 (id_list -> ID .)
+    DO              reduce using rule 15 (id_list -> ID .)
+    NUMBER          reduce using rule 15 (id_list -> ID .)
+    ENDIF           reduce using rule 15 (id_list -> ID .)
+    ELSE            reduce using rule 15 (id_list -> ID .)
 
 
 state 27
 
-    (17) if_stmt -> IF LPAREN . condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> IF LPAREN . condition RPAREN THEN statements ELSE statements ENDIF
-    (32) condition -> . expression DOT_EQ expression
-    (33) condition -> . expression DOT_NE expression
-    (34) condition -> . expression DOT_LT expression
-    (35) condition -> . expression DOT_LE expression
-    (36) condition -> . expression DOT_GT expression
-    (37) condition -> . expression DOT_GE expression
-    (38) condition -> . condition DOT_AND condition
-    (39) condition -> . condition DOT_OR condition
-    (40) condition -> . DOT_NOT condition
-    (41) condition -> . LPAREN condition RPAREN
-    (42) condition -> . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (12) declaration -> REAL id_list .
+    (14) id_list -> id_list . COMMA ID
 
-    DOT_NOT         shift and go to state 40
-    LPAREN          shift and go to state 37
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    END             reduce using rule 12 (declaration -> REAL id_list .)
+    INTEGER         reduce using rule 12 (declaration -> REAL id_list .)
+    REAL            reduce using rule 12 (declaration -> REAL id_list .)
+    LOGICAL         reduce using rule 12 (declaration -> REAL id_list .)
+    ID              reduce using rule 12 (declaration -> REAL id_list .)
+    PRINT           reduce using rule 12 (declaration -> REAL id_list .)
+    READ            reduce using rule 12 (declaration -> REAL id_list .)
+    IF              reduce using rule 12 (declaration -> REAL id_list .)
+    DO              reduce using rule 12 (declaration -> REAL id_list .)
+    NUMBER          reduce using rule 12 (declaration -> REAL id_list .)
+    ENDIF           reduce using rule 12 (declaration -> REAL id_list .)
+    ELSE            reduce using rule 12 (declaration -> REAL id_list .)
+    COMMA           shift and go to state 40
 
-    condition                      shift and go to state 38
-    expression                     shift and go to state 39
 
 state 28
 
-    (29) expression -> ID .
+    (13) declaration -> LOGICAL id_list .
+    (14) id_list -> id_list . COMMA ID
 
-    PLUS            reduce using rule 29 (expression -> ID .)
-    MINUS           reduce using rule 29 (expression -> ID .)
-    TIMES           reduce using rule 29 (expression -> ID .)
-    DIVIDE          reduce using rule 29 (expression -> ID .)
-    END             reduce using rule 29 (expression -> ID .)
-    INTEGER         reduce using rule 29 (expression -> ID .)
-    REAL            reduce using rule 29 (expression -> ID .)
-    LOGICAL         reduce using rule 29 (expression -> ID .)
-    ID              reduce using rule 29 (expression -> ID .)
-    PRINT           reduce using rule 29 (expression -> ID .)
-    READ            reduce using rule 29 (expression -> ID .)
-    IF              reduce using rule 29 (expression -> ID .)
-    ENDIF           reduce using rule 29 (expression -> ID .)
-    ELSE            reduce using rule 29 (expression -> ID .)
-    DOT_EQ          reduce using rule 29 (expression -> ID .)
-    DOT_NE          reduce using rule 29 (expression -> ID .)
-    DOT_LT          reduce using rule 29 (expression -> ID .)
-    DOT_LE          reduce using rule 29 (expression -> ID .)
-    DOT_GT          reduce using rule 29 (expression -> ID .)
-    DOT_GE          reduce using rule 29 (expression -> ID .)
-    RPAREN          reduce using rule 29 (expression -> ID .)
-    DOT_AND         reduce using rule 29 (expression -> ID .)
-    DOT_OR          reduce using rule 29 (expression -> ID .)
-    COMMA           reduce using rule 29 (expression -> ID .)
+    END             reduce using rule 13 (declaration -> LOGICAL id_list .)
+    INTEGER         reduce using rule 13 (declaration -> LOGICAL id_list .)
+    REAL            reduce using rule 13 (declaration -> LOGICAL id_list .)
+    LOGICAL         reduce using rule 13 (declaration -> LOGICAL id_list .)
+    ID              reduce using rule 13 (declaration -> LOGICAL id_list .)
+    PRINT           reduce using rule 13 (declaration -> LOGICAL id_list .)
+    READ            reduce using rule 13 (declaration -> LOGICAL id_list .)
+    IF              reduce using rule 13 (declaration -> LOGICAL id_list .)
+    DO              reduce using rule 13 (declaration -> LOGICAL id_list .)
+    NUMBER          reduce using rule 13 (declaration -> LOGICAL id_list .)
+    ENDIF           reduce using rule 13 (declaration -> LOGICAL id_list .)
+    ELSE            reduce using rule 13 (declaration -> LOGICAL id_list .)
+    COMMA           shift and go to state 40
 
 
 state 29
 
-    (14) assignment -> ID ASSIGN expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (17) print_stmt -> PRINT TIMES . COMMA print_list
 
-    END             reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    INTEGER         reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    REAL            reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    LOGICAL         reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    ID              reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    PRINT           reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    READ            reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    IF              reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    ENDIF           reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    ELSE            reduce using rule 14 (assignment -> ID ASSIGN expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    COMMA           shift and go to state 41
 
 
 state 30
 
-    (27) expression -> LPAREN . expression RPAREN
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (18) read_stmt -> READ TIMES . COMMA id_list
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    COMMA           shift and go to state 42
 
-    expression                     shift and go to state 45
 
 state 31
 
-    (28) expression -> NUMBER .
+    (19) if_stmt -> IF LPAREN . condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> IF LPAREN . condition RPAREN THEN statements ELSE statements ENDIF
+    (44) condition -> . expression DOT_EQ expression
+    (45) condition -> . expression DOT_NE expression
+    (46) condition -> . expression DOT_LT expression
+    (47) condition -> . expression DOT_LE expression
+    (48) condition -> . expression DOT_GT expression
+    (49) condition -> . expression DOT_GE expression
+    (50) condition -> . condition DOT_AND condition
+    (51) condition -> . condition DOT_OR condition
+    (52) condition -> . DOT_NOT condition
+    (53) condition -> . LPAREN condition RPAREN
+    (54) condition -> . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    PLUS            reduce using rule 28 (expression -> NUMBER .)
-    MINUS           reduce using rule 28 (expression -> NUMBER .)
-    TIMES           reduce using rule 28 (expression -> NUMBER .)
-    DIVIDE          reduce using rule 28 (expression -> NUMBER .)
-    END             reduce using rule 28 (expression -> NUMBER .)
-    INTEGER         reduce using rule 28 (expression -> NUMBER .)
-    REAL            reduce using rule 28 (expression -> NUMBER .)
-    LOGICAL         reduce using rule 28 (expression -> NUMBER .)
-    ID              reduce using rule 28 (expression -> NUMBER .)
-    PRINT           reduce using rule 28 (expression -> NUMBER .)
-    READ            reduce using rule 28 (expression -> NUMBER .)
-    IF              reduce using rule 28 (expression -> NUMBER .)
-    ENDIF           reduce using rule 28 (expression -> NUMBER .)
-    ELSE            reduce using rule 28 (expression -> NUMBER .)
-    DOT_EQ          reduce using rule 28 (expression -> NUMBER .)
-    DOT_NE          reduce using rule 28 (expression -> NUMBER .)
-    DOT_LT          reduce using rule 28 (expression -> NUMBER .)
-    DOT_LE          reduce using rule 28 (expression -> NUMBER .)
-    DOT_GT          reduce using rule 28 (expression -> NUMBER .)
-    DOT_GE          reduce using rule 28 (expression -> NUMBER .)
-    RPAREN          reduce using rule 28 (expression -> NUMBER .)
-    DOT_AND         reduce using rule 28 (expression -> NUMBER .)
-    DOT_OR          reduce using rule 28 (expression -> NUMBER .)
-    COMMA           reduce using rule 28 (expression -> NUMBER .)
+    DOT_NOT         shift and go to state 46
+    LPAREN          shift and go to state 43
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    condition                      shift and go to state 44
+    expression                     shift and go to state 45
 
 state 32
 
-    (30) expression -> DOT_TRUE .
+    (21) do_stmt -> DO NUMBER . ID ASSIGN expression COMMA expression do_body_statements labeled_continue
 
-    PLUS            reduce using rule 30 (expression -> DOT_TRUE .)
-    MINUS           reduce using rule 30 (expression -> DOT_TRUE .)
-    TIMES           reduce using rule 30 (expression -> DOT_TRUE .)
-    DIVIDE          reduce using rule 30 (expression -> DOT_TRUE .)
-    END             reduce using rule 30 (expression -> DOT_TRUE .)
-    INTEGER         reduce using rule 30 (expression -> DOT_TRUE .)
-    REAL            reduce using rule 30 (expression -> DOT_TRUE .)
-    LOGICAL         reduce using rule 30 (expression -> DOT_TRUE .)
-    ID              reduce using rule 30 (expression -> DOT_TRUE .)
-    PRINT           reduce using rule 30 (expression -> DOT_TRUE .)
-    READ            reduce using rule 30 (expression -> DOT_TRUE .)
-    IF              reduce using rule 30 (expression -> DOT_TRUE .)
-    ENDIF           reduce using rule 30 (expression -> DOT_TRUE .)
-    ELSE            reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_EQ          reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_NE          reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_LT          reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_LE          reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_GT          reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_GE          reduce using rule 30 (expression -> DOT_TRUE .)
-    RPAREN          reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_AND         reduce using rule 30 (expression -> DOT_TRUE .)
-    DOT_OR          reduce using rule 30 (expression -> DOT_TRUE .)
-    COMMA           reduce using rule 30 (expression -> DOT_TRUE .)
+    ID              shift and go to state 47
 
 
 state 33
 
-    (31) expression -> DOT_FALSE .
+    (22) labeled_continue -> NUMBER CONTINUE .
 
-    PLUS            reduce using rule 31 (expression -> DOT_FALSE .)
-    MINUS           reduce using rule 31 (expression -> DOT_FALSE .)
-    TIMES           reduce using rule 31 (expression -> DOT_FALSE .)
-    DIVIDE          reduce using rule 31 (expression -> DOT_FALSE .)
-    END             reduce using rule 31 (expression -> DOT_FALSE .)
-    INTEGER         reduce using rule 31 (expression -> DOT_FALSE .)
-    REAL            reduce using rule 31 (expression -> DOT_FALSE .)
-    LOGICAL         reduce using rule 31 (expression -> DOT_FALSE .)
-    ID              reduce using rule 31 (expression -> DOT_FALSE .)
-    PRINT           reduce using rule 31 (expression -> DOT_FALSE .)
-    READ            reduce using rule 31 (expression -> DOT_FALSE .)
-    IF              reduce using rule 31 (expression -> DOT_FALSE .)
-    ENDIF           reduce using rule 31 (expression -> DOT_FALSE .)
-    ELSE            reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_EQ          reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_NE          reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_LT          reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_LE          reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_GT          reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_GE          reduce using rule 31 (expression -> DOT_FALSE .)
-    RPAREN          reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_AND         reduce using rule 31 (expression -> DOT_FALSE .)
-    DOT_OR          reduce using rule 31 (expression -> DOT_FALSE .)
-    COMMA           reduce using rule 31 (expression -> DOT_FALSE .)
+    END             reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    INTEGER         reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    REAL            reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    LOGICAL         reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    ID              reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    PRINT           reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    READ            reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    IF              reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    DO              reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    NUMBER          reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    ENDIF           reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
+    ELSE            reduce using rule 22 (labeled_continue -> NUMBER CONTINUE .)
 
 
 state 34
 
-    (12) id_list -> id_list COMMA . ID
+    (41) expression -> ID .
 
-    ID              shift and go to state 46
+    PLUS            reduce using rule 41 (expression -> ID .)
+    MINUS           reduce using rule 41 (expression -> ID .)
+    TIMES           reduce using rule 41 (expression -> ID .)
+    DIVIDE          reduce using rule 41 (expression -> ID .)
+    END             reduce using rule 41 (expression -> ID .)
+    INTEGER         reduce using rule 41 (expression -> ID .)
+    REAL            reduce using rule 41 (expression -> ID .)
+    LOGICAL         reduce using rule 41 (expression -> ID .)
+    ID              reduce using rule 41 (expression -> ID .)
+    PRINT           reduce using rule 41 (expression -> ID .)
+    READ            reduce using rule 41 (expression -> ID .)
+    IF              reduce using rule 41 (expression -> ID .)
+    DO              reduce using rule 41 (expression -> ID .)
+    NUMBER          reduce using rule 41 (expression -> ID .)
+    ENDIF           reduce using rule 41 (expression -> ID .)
+    ELSE            reduce using rule 41 (expression -> ID .)
+    DOT_EQ          reduce using rule 41 (expression -> ID .)
+    DOT_NE          reduce using rule 41 (expression -> ID .)
+    DOT_LT          reduce using rule 41 (expression -> ID .)
+    DOT_LE          reduce using rule 41 (expression -> ID .)
+    DOT_GT          reduce using rule 41 (expression -> ID .)
+    DOT_GE          reduce using rule 41 (expression -> ID .)
+    RPAREN          reduce using rule 41 (expression -> ID .)
+    DOT_AND         reduce using rule 41 (expression -> ID .)
+    DOT_OR          reduce using rule 41 (expression -> ID .)
+    COMMA           reduce using rule 41 (expression -> ID .)
 
 
 state 35
 
-    (15) print_stmt -> PRINT TIMES COMMA . print_list
-    (19) print_list -> . print_list COMMA printable
-    (20) print_list -> . printable
-    (21) printable -> . expression
-    (22) printable -> . STRING
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (16) assignment -> ID ASSIGN expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    STRING          shift and go to state 50
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    END             reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    INTEGER         reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    REAL            reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    LOGICAL         reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    ID              reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    PRINT           reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    READ            reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    IF              reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    DO              reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    NUMBER          reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    ENDIF           reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    ELSE            reduce using rule 16 (assignment -> ID ASSIGN expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
 
-    print_list                     shift and go to state 47
-    printable                      shift and go to state 48
-    expression                     shift and go to state 49
 
 state 36
 
-    (16) read_stmt -> READ TIMES COMMA . id_list
-    (12) id_list -> . id_list COMMA ID
-    (13) id_list -> . ID
+    (39) expression -> LPAREN . expression RPAREN
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    ID              shift and go to state 22
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-    id_list                        shift and go to state 51
+    expression                     shift and go to state 52
 
 state 37
 
-    (41) condition -> LPAREN . condition RPAREN
-    (27) expression -> LPAREN . expression RPAREN
-    (32) condition -> . expression DOT_EQ expression
-    (33) condition -> . expression DOT_NE expression
-    (34) condition -> . expression DOT_LT expression
-    (35) condition -> . expression DOT_LE expression
-    (36) condition -> . expression DOT_GT expression
-    (37) condition -> . expression DOT_GE expression
-    (38) condition -> . condition DOT_AND condition
-    (39) condition -> . condition DOT_OR condition
-    (40) condition -> . DOT_NOT condition
-    (41) condition -> . LPAREN condition RPAREN
-    (42) condition -> . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (40) expression -> NUMBER .
 
-    DOT_NOT         shift and go to state 40
-    LPAREN          shift and go to state 37
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    PLUS            reduce using rule 40 (expression -> NUMBER .)
+    MINUS           reduce using rule 40 (expression -> NUMBER .)
+    TIMES           reduce using rule 40 (expression -> NUMBER .)
+    DIVIDE          reduce using rule 40 (expression -> NUMBER .)
+    END             reduce using rule 40 (expression -> NUMBER .)
+    INTEGER         reduce using rule 40 (expression -> NUMBER .)
+    REAL            reduce using rule 40 (expression -> NUMBER .)
+    LOGICAL         reduce using rule 40 (expression -> NUMBER .)
+    ID              reduce using rule 40 (expression -> NUMBER .)
+    PRINT           reduce using rule 40 (expression -> NUMBER .)
+    READ            reduce using rule 40 (expression -> NUMBER .)
+    IF              reduce using rule 40 (expression -> NUMBER .)
+    DO              reduce using rule 40 (expression -> NUMBER .)
+    NUMBER          reduce using rule 40 (expression -> NUMBER .)
+    ENDIF           reduce using rule 40 (expression -> NUMBER .)
+    ELSE            reduce using rule 40 (expression -> NUMBER .)
+    DOT_EQ          reduce using rule 40 (expression -> NUMBER .)
+    DOT_NE          reduce using rule 40 (expression -> NUMBER .)
+    DOT_LT          reduce using rule 40 (expression -> NUMBER .)
+    DOT_LE          reduce using rule 40 (expression -> NUMBER .)
+    DOT_GT          reduce using rule 40 (expression -> NUMBER .)
+    DOT_GE          reduce using rule 40 (expression -> NUMBER .)
+    RPAREN          reduce using rule 40 (expression -> NUMBER .)
+    DOT_AND         reduce using rule 40 (expression -> NUMBER .)
+    DOT_OR          reduce using rule 40 (expression -> NUMBER .)
+    COMMA           reduce using rule 40 (expression -> NUMBER .)
 
-    condition                      shift and go to state 52
-    expression                     shift and go to state 53
 
 state 38
 
-    (17) if_stmt -> IF LPAREN condition . RPAREN THEN statements ENDIF
-    (18) if_stmt -> IF LPAREN condition . RPAREN THEN statements ELSE statements ENDIF
-    (38) condition -> condition . DOT_AND condition
-    (39) condition -> condition . DOT_OR condition
+    (42) expression -> DOT_TRUE .
 
-    RPAREN          shift and go to state 54
-    DOT_AND         shift and go to state 55
-    DOT_OR          shift and go to state 56
+    PLUS            reduce using rule 42 (expression -> DOT_TRUE .)
+    MINUS           reduce using rule 42 (expression -> DOT_TRUE .)
+    TIMES           reduce using rule 42 (expression -> DOT_TRUE .)
+    DIVIDE          reduce using rule 42 (expression -> DOT_TRUE .)
+    END             reduce using rule 42 (expression -> DOT_TRUE .)
+    INTEGER         reduce using rule 42 (expression -> DOT_TRUE .)
+    REAL            reduce using rule 42 (expression -> DOT_TRUE .)
+    LOGICAL         reduce using rule 42 (expression -> DOT_TRUE .)
+    ID              reduce using rule 42 (expression -> DOT_TRUE .)
+    PRINT           reduce using rule 42 (expression -> DOT_TRUE .)
+    READ            reduce using rule 42 (expression -> DOT_TRUE .)
+    IF              reduce using rule 42 (expression -> DOT_TRUE .)
+    DO              reduce using rule 42 (expression -> DOT_TRUE .)
+    NUMBER          reduce using rule 42 (expression -> DOT_TRUE .)
+    ENDIF           reduce using rule 42 (expression -> DOT_TRUE .)
+    ELSE            reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_EQ          reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_NE          reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_LT          reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_LE          reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_GT          reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_GE          reduce using rule 42 (expression -> DOT_TRUE .)
+    RPAREN          reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_AND         reduce using rule 42 (expression -> DOT_TRUE .)
+    DOT_OR          reduce using rule 42 (expression -> DOT_TRUE .)
+    COMMA           reduce using rule 42 (expression -> DOT_TRUE .)
 
 
 state 39
 
-    (32) condition -> expression . DOT_EQ expression
-    (33) condition -> expression . DOT_NE expression
-    (34) condition -> expression . DOT_LT expression
-    (35) condition -> expression . DOT_LE expression
-    (36) condition -> expression . DOT_GT expression
-    (37) condition -> expression . DOT_GE expression
-    (42) condition -> expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (43) expression -> DOT_FALSE .
 
-    DOT_EQ          shift and go to state 57
-    DOT_NE          shift and go to state 58
-    DOT_LT          shift and go to state 59
-    DOT_LE          shift and go to state 60
-    DOT_GT          shift and go to state 61
-    DOT_GE          shift and go to state 62
-    RPAREN          reduce using rule 42 (condition -> expression .)
-    DOT_AND         reduce using rule 42 (condition -> expression .)
-    DOT_OR          reduce using rule 42 (condition -> expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    PLUS            reduce using rule 43 (expression -> DOT_FALSE .)
+    MINUS           reduce using rule 43 (expression -> DOT_FALSE .)
+    TIMES           reduce using rule 43 (expression -> DOT_FALSE .)
+    DIVIDE          reduce using rule 43 (expression -> DOT_FALSE .)
+    END             reduce using rule 43 (expression -> DOT_FALSE .)
+    INTEGER         reduce using rule 43 (expression -> DOT_FALSE .)
+    REAL            reduce using rule 43 (expression -> DOT_FALSE .)
+    LOGICAL         reduce using rule 43 (expression -> DOT_FALSE .)
+    ID              reduce using rule 43 (expression -> DOT_FALSE .)
+    PRINT           reduce using rule 43 (expression -> DOT_FALSE .)
+    READ            reduce using rule 43 (expression -> DOT_FALSE .)
+    IF              reduce using rule 43 (expression -> DOT_FALSE .)
+    DO              reduce using rule 43 (expression -> DOT_FALSE .)
+    NUMBER          reduce using rule 43 (expression -> DOT_FALSE .)
+    ENDIF           reduce using rule 43 (expression -> DOT_FALSE .)
+    ELSE            reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_EQ          reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_NE          reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_LT          reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_LE          reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_GT          reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_GE          reduce using rule 43 (expression -> DOT_FALSE .)
+    RPAREN          reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_AND         reduce using rule 43 (expression -> DOT_FALSE .)
+    DOT_OR          reduce using rule 43 (expression -> DOT_FALSE .)
+    COMMA           reduce using rule 43 (expression -> DOT_FALSE .)
 
 
 state 40
 
-    (40) condition -> DOT_NOT . condition
-    (32) condition -> . expression DOT_EQ expression
-    (33) condition -> . expression DOT_NE expression
-    (34) condition -> . expression DOT_LT expression
-    (35) condition -> . expression DOT_LE expression
-    (36) condition -> . expression DOT_GT expression
-    (37) condition -> . expression DOT_GE expression
-    (38) condition -> . condition DOT_AND condition
-    (39) condition -> . condition DOT_OR condition
-    (40) condition -> . DOT_NOT condition
-    (41) condition -> . LPAREN condition RPAREN
-    (42) condition -> . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (14) id_list -> id_list COMMA . ID
 
-    DOT_NOT         shift and go to state 40
-    LPAREN          shift and go to state 37
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    ID              shift and go to state 53
 
-    condition                      shift and go to state 63
-    expression                     shift and go to state 39
 
 state 41
 
-    (23) expression -> expression PLUS . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (17) print_stmt -> PRINT TIMES COMMA . print_list
+    (31) print_list -> . print_list COMMA printable
+    (32) print_list -> . printable
+    (33) printable -> . expression
+    (34) printable -> . STRING
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    STRING          shift and go to state 57
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-    expression                     shift and go to state 64
+    print_list                     shift and go to state 54
+    printable                      shift and go to state 55
+    expression                     shift and go to state 56
 
 state 42
 
-    (24) expression -> expression MINUS . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (18) read_stmt -> READ TIMES COMMA . id_list
+    (14) id_list -> . id_list COMMA ID
+    (15) id_list -> . ID
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    ID              shift and go to state 26
 
-    expression                     shift and go to state 65
+    id_list                        shift and go to state 58
 
 state 43
 
-    (25) expression -> expression TIMES . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (53) condition -> LPAREN . condition RPAREN
+    (39) expression -> LPAREN . expression RPAREN
+    (44) condition -> . expression DOT_EQ expression
+    (45) condition -> . expression DOT_NE expression
+    (46) condition -> . expression DOT_LT expression
+    (47) condition -> . expression DOT_LE expression
+    (48) condition -> . expression DOT_GT expression
+    (49) condition -> . expression DOT_GE expression
+    (50) condition -> . condition DOT_AND condition
+    (51) condition -> . condition DOT_OR condition
+    (52) condition -> . DOT_NOT condition
+    (53) condition -> . LPAREN condition RPAREN
+    (54) condition -> . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    DOT_NOT         shift and go to state 46
+    LPAREN          shift and go to state 43
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-    expression                     shift and go to state 66
+    condition                      shift and go to state 59
+    expression                     shift and go to state 60
 
 state 44
 
-    (26) expression -> expression DIVIDE . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (19) if_stmt -> IF LPAREN condition . RPAREN THEN statements ENDIF
+    (20) if_stmt -> IF LPAREN condition . RPAREN THEN statements ELSE statements ENDIF
+    (50) condition -> condition . DOT_AND condition
+    (51) condition -> condition . DOT_OR condition
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    RPAREN          shift and go to state 61
+    DOT_AND         shift and go to state 62
+    DOT_OR          shift and go to state 63
 
-    expression                     shift and go to state 67
 
 state 45
 
-    (27) expression -> LPAREN expression . RPAREN
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (44) condition -> expression . DOT_EQ expression
+    (45) condition -> expression . DOT_NE expression
+    (46) condition -> expression . DOT_LT expression
+    (47) condition -> expression . DOT_LE expression
+    (48) condition -> expression . DOT_GT expression
+    (49) condition -> expression . DOT_GE expression
+    (54) condition -> expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    RPAREN          shift and go to state 68
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    DOT_EQ          shift and go to state 64
+    DOT_NE          shift and go to state 65
+    DOT_LT          shift and go to state 66
+    DOT_LE          shift and go to state 67
+    DOT_GT          shift and go to state 68
+    DOT_GE          shift and go to state 69
+    RPAREN          reduce using rule 54 (condition -> expression .)
+    DOT_AND         reduce using rule 54 (condition -> expression .)
+    DOT_OR          reduce using rule 54 (condition -> expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
 
 
 state 46
 
-    (12) id_list -> id_list COMMA ID .
+    (52) condition -> DOT_NOT . condition
+    (44) condition -> . expression DOT_EQ expression
+    (45) condition -> . expression DOT_NE expression
+    (46) condition -> . expression DOT_LT expression
+    (47) condition -> . expression DOT_LE expression
+    (48) condition -> . expression DOT_GT expression
+    (49) condition -> . expression DOT_GE expression
+    (50) condition -> . condition DOT_AND condition
+    (51) condition -> . condition DOT_OR condition
+    (52) condition -> . DOT_NOT condition
+    (53) condition -> . LPAREN condition RPAREN
+    (54) condition -> . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    COMMA           reduce using rule 12 (id_list -> id_list COMMA ID .)
-    END             reduce using rule 12 (id_list -> id_list COMMA ID .)
-    INTEGER         reduce using rule 12 (id_list -> id_list COMMA ID .)
-    REAL            reduce using rule 12 (id_list -> id_list COMMA ID .)
-    LOGICAL         reduce using rule 12 (id_list -> id_list COMMA ID .)
-    ID              reduce using rule 12 (id_list -> id_list COMMA ID .)
-    PRINT           reduce using rule 12 (id_list -> id_list COMMA ID .)
-    READ            reduce using rule 12 (id_list -> id_list COMMA ID .)
-    IF              reduce using rule 12 (id_list -> id_list COMMA ID .)
-    ENDIF           reduce using rule 12 (id_list -> id_list COMMA ID .)
-    ELSE            reduce using rule 12 (id_list -> id_list COMMA ID .)
+    DOT_NOT         shift and go to state 46
+    LPAREN          shift and go to state 43
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    condition                      shift and go to state 70
+    expression                     shift and go to state 45
 
 state 47
 
-    (15) print_stmt -> PRINT TIMES COMMA print_list .
-    (19) print_list -> print_list . COMMA printable
+    (21) do_stmt -> DO NUMBER ID . ASSIGN expression COMMA expression do_body_statements labeled_continue
 
-    END             reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    INTEGER         reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    REAL            reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    LOGICAL         reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    ID              reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    PRINT           reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    READ            reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    IF              reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    ENDIF           reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    ELSE            reduce using rule 15 (print_stmt -> PRINT TIMES COMMA print_list .)
-    COMMA           shift and go to state 69
+    ASSIGN          shift and go to state 71
 
 
 state 48
 
-    (20) print_list -> printable .
+    (35) expression -> expression PLUS . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    COMMA           reduce using rule 20 (print_list -> printable .)
-    END             reduce using rule 20 (print_list -> printable .)
-    INTEGER         reduce using rule 20 (print_list -> printable .)
-    REAL            reduce using rule 20 (print_list -> printable .)
-    LOGICAL         reduce using rule 20 (print_list -> printable .)
-    ID              reduce using rule 20 (print_list -> printable .)
-    PRINT           reduce using rule 20 (print_list -> printable .)
-    READ            reduce using rule 20 (print_list -> printable .)
-    IF              reduce using rule 20 (print_list -> printable .)
-    ENDIF           reduce using rule 20 (print_list -> printable .)
-    ELSE            reduce using rule 20 (print_list -> printable .)
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    expression                     shift and go to state 72
 
 state 49
 
-    (21) printable -> expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (36) expression -> expression MINUS . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    COMMA           reduce using rule 21 (printable -> expression .)
-    END             reduce using rule 21 (printable -> expression .)
-    INTEGER         reduce using rule 21 (printable -> expression .)
-    REAL            reduce using rule 21 (printable -> expression .)
-    LOGICAL         reduce using rule 21 (printable -> expression .)
-    ID              reduce using rule 21 (printable -> expression .)
-    PRINT           reduce using rule 21 (printable -> expression .)
-    READ            reduce using rule 21 (printable -> expression .)
-    IF              reduce using rule 21 (printable -> expression .)
-    ENDIF           reduce using rule 21 (printable -> expression .)
-    ELSE            reduce using rule 21 (printable -> expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    expression                     shift and go to state 73
 
 state 50
 
-    (22) printable -> STRING .
+    (37) expression -> expression TIMES . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    COMMA           reduce using rule 22 (printable -> STRING .)
-    END             reduce using rule 22 (printable -> STRING .)
-    INTEGER         reduce using rule 22 (printable -> STRING .)
-    REAL            reduce using rule 22 (printable -> STRING .)
-    LOGICAL         reduce using rule 22 (printable -> STRING .)
-    ID              reduce using rule 22 (printable -> STRING .)
-    PRINT           reduce using rule 22 (printable -> STRING .)
-    READ            reduce using rule 22 (printable -> STRING .)
-    IF              reduce using rule 22 (printable -> STRING .)
-    ENDIF           reduce using rule 22 (printable -> STRING .)
-    ELSE            reduce using rule 22 (printable -> STRING .)
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    expression                     shift and go to state 74
 
 state 51
 
-    (16) read_stmt -> READ TIMES COMMA id_list .
-    (12) id_list -> id_list . COMMA ID
+    (38) expression -> expression DIVIDE . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    END             reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    INTEGER         reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    REAL            reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    LOGICAL         reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    ID              reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    PRINT           reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    READ            reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    IF              reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    ENDIF           reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    ELSE            reduce using rule 16 (read_stmt -> READ TIMES COMMA id_list .)
-    COMMA           shift and go to state 34
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    expression                     shift and go to state 75
 
 state 52
 
-    (41) condition -> LPAREN condition . RPAREN
-    (38) condition -> condition . DOT_AND condition
-    (39) condition -> condition . DOT_OR condition
+    (39) expression -> LPAREN expression . RPAREN
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    RPAREN          shift and go to state 70
-    DOT_AND         shift and go to state 55
-    DOT_OR          shift and go to state 56
+    RPAREN          shift and go to state 76
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
 
 
 state 53
 
-    (27) expression -> LPAREN expression . RPAREN
-    (32) condition -> expression . DOT_EQ expression
-    (33) condition -> expression . DOT_NE expression
-    (34) condition -> expression . DOT_LT expression
-    (35) condition -> expression . DOT_LE expression
-    (36) condition -> expression . DOT_GT expression
-    (37) condition -> expression . DOT_GE expression
-    (42) condition -> expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (14) id_list -> id_list COMMA ID .
 
-    DOT_EQ          shift and go to state 57
-    DOT_NE          shift and go to state 58
-    DOT_LT          shift and go to state 59
-    DOT_LE          shift and go to state 60
-    DOT_GT          shift and go to state 61
-    DOT_GE          shift and go to state 62
-    RPAREN          reduce using rule 42 (condition -> expression .)
-    DOT_AND         reduce using rule 42 (condition -> expression .)
-    DOT_OR          reduce using rule 42 (condition -> expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
-
-  ! RPAREN          [ shift and go to state 68 ]
+    COMMA           reduce using rule 14 (id_list -> id_list COMMA ID .)
+    END             reduce using rule 14 (id_list -> id_list COMMA ID .)
+    INTEGER         reduce using rule 14 (id_list -> id_list COMMA ID .)
+    REAL            reduce using rule 14 (id_list -> id_list COMMA ID .)
+    LOGICAL         reduce using rule 14 (id_list -> id_list COMMA ID .)
+    ID              reduce using rule 14 (id_list -> id_list COMMA ID .)
+    PRINT           reduce using rule 14 (id_list -> id_list COMMA ID .)
+    READ            reduce using rule 14 (id_list -> id_list COMMA ID .)
+    IF              reduce using rule 14 (id_list -> id_list COMMA ID .)
+    DO              reduce using rule 14 (id_list -> id_list COMMA ID .)
+    NUMBER          reduce using rule 14 (id_list -> id_list COMMA ID .)
+    ENDIF           reduce using rule 14 (id_list -> id_list COMMA ID .)
+    ELSE            reduce using rule 14 (id_list -> id_list COMMA ID .)
 
 
 state 54
 
-    (17) if_stmt -> IF LPAREN condition RPAREN . THEN statements ENDIF
-    (18) if_stmt -> IF LPAREN condition RPAREN . THEN statements ELSE statements ENDIF
+    (17) print_stmt -> PRINT TIMES COMMA print_list .
+    (31) print_list -> print_list . COMMA printable
 
-    THEN            shift and go to state 71
+    END             reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    INTEGER         reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    REAL            reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    LOGICAL         reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    ID              reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    PRINT           reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    READ            reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    IF              reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    DO              reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    NUMBER          reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    ENDIF           reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    ELSE            reduce using rule 17 (print_stmt -> PRINT TIMES COMMA print_list .)
+    COMMA           shift and go to state 77
 
 
 state 55
 
-    (38) condition -> condition DOT_AND . condition
-    (32) condition -> . expression DOT_EQ expression
-    (33) condition -> . expression DOT_NE expression
-    (34) condition -> . expression DOT_LT expression
-    (35) condition -> . expression DOT_LE expression
-    (36) condition -> . expression DOT_GT expression
-    (37) condition -> . expression DOT_GE expression
-    (38) condition -> . condition DOT_AND condition
-    (39) condition -> . condition DOT_OR condition
-    (40) condition -> . DOT_NOT condition
-    (41) condition -> . LPAREN condition RPAREN
-    (42) condition -> . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (32) print_list -> printable .
 
-    DOT_NOT         shift and go to state 40
-    LPAREN          shift and go to state 37
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    COMMA           reduce using rule 32 (print_list -> printable .)
+    END             reduce using rule 32 (print_list -> printable .)
+    INTEGER         reduce using rule 32 (print_list -> printable .)
+    REAL            reduce using rule 32 (print_list -> printable .)
+    LOGICAL         reduce using rule 32 (print_list -> printable .)
+    ID              reduce using rule 32 (print_list -> printable .)
+    PRINT           reduce using rule 32 (print_list -> printable .)
+    READ            reduce using rule 32 (print_list -> printable .)
+    IF              reduce using rule 32 (print_list -> printable .)
+    DO              reduce using rule 32 (print_list -> printable .)
+    NUMBER          reduce using rule 32 (print_list -> printable .)
+    ENDIF           reduce using rule 32 (print_list -> printable .)
+    ELSE            reduce using rule 32 (print_list -> printable .)
 
-    condition                      shift and go to state 72
-    expression                     shift and go to state 39
 
 state 56
 
-    (39) condition -> condition DOT_OR . condition
-    (32) condition -> . expression DOT_EQ expression
-    (33) condition -> . expression DOT_NE expression
-    (34) condition -> . expression DOT_LT expression
-    (35) condition -> . expression DOT_LE expression
-    (36) condition -> . expression DOT_GT expression
-    (37) condition -> . expression DOT_GE expression
-    (38) condition -> . condition DOT_AND condition
-    (39) condition -> . condition DOT_OR condition
-    (40) condition -> . DOT_NOT condition
-    (41) condition -> . LPAREN condition RPAREN
-    (42) condition -> . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (33) printable -> expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    DOT_NOT         shift and go to state 40
-    LPAREN          shift and go to state 37
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    COMMA           reduce using rule 33 (printable -> expression .)
+    END             reduce using rule 33 (printable -> expression .)
+    INTEGER         reduce using rule 33 (printable -> expression .)
+    REAL            reduce using rule 33 (printable -> expression .)
+    LOGICAL         reduce using rule 33 (printable -> expression .)
+    ID              reduce using rule 33 (printable -> expression .)
+    PRINT           reduce using rule 33 (printable -> expression .)
+    READ            reduce using rule 33 (printable -> expression .)
+    IF              reduce using rule 33 (printable -> expression .)
+    DO              reduce using rule 33 (printable -> expression .)
+    NUMBER          reduce using rule 33 (printable -> expression .)
+    ENDIF           reduce using rule 33 (printable -> expression .)
+    ELSE            reduce using rule 33 (printable -> expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
 
-    condition                      shift and go to state 73
-    expression                     shift and go to state 39
 
 state 57
 
-    (32) condition -> expression DOT_EQ . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (34) printable -> STRING .
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    COMMA           reduce using rule 34 (printable -> STRING .)
+    END             reduce using rule 34 (printable -> STRING .)
+    INTEGER         reduce using rule 34 (printable -> STRING .)
+    REAL            reduce using rule 34 (printable -> STRING .)
+    LOGICAL         reduce using rule 34 (printable -> STRING .)
+    ID              reduce using rule 34 (printable -> STRING .)
+    PRINT           reduce using rule 34 (printable -> STRING .)
+    READ            reduce using rule 34 (printable -> STRING .)
+    IF              reduce using rule 34 (printable -> STRING .)
+    DO              reduce using rule 34 (printable -> STRING .)
+    NUMBER          reduce using rule 34 (printable -> STRING .)
+    ENDIF           reduce using rule 34 (printable -> STRING .)
+    ELSE            reduce using rule 34 (printable -> STRING .)
 
-    expression                     shift and go to state 74
 
 state 58
 
-    (33) condition -> expression DOT_NE . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (18) read_stmt -> READ TIMES COMMA id_list .
+    (14) id_list -> id_list . COMMA ID
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    END             reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    INTEGER         reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    REAL            reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    LOGICAL         reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    ID              reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    PRINT           reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    READ            reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    IF              reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    DO              reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    NUMBER          reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    ENDIF           reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    ELSE            reduce using rule 18 (read_stmt -> READ TIMES COMMA id_list .)
+    COMMA           shift and go to state 40
 
-    expression                     shift and go to state 75
 
 state 59
 
-    (34) condition -> expression DOT_LT . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (53) condition -> LPAREN condition . RPAREN
+    (50) condition -> condition . DOT_AND condition
+    (51) condition -> condition . DOT_OR condition
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    RPAREN          shift and go to state 78
+    DOT_AND         shift and go to state 62
+    DOT_OR          shift and go to state 63
 
-    expression                     shift and go to state 76
 
 state 60
 
-    (35) condition -> expression DOT_LE . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (39) expression -> LPAREN expression . RPAREN
+    (44) condition -> expression . DOT_EQ expression
+    (45) condition -> expression . DOT_NE expression
+    (46) condition -> expression . DOT_LT expression
+    (47) condition -> expression . DOT_LE expression
+    (48) condition -> expression . DOT_GT expression
+    (49) condition -> expression . DOT_GE expression
+    (54) condition -> expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    DOT_EQ          shift and go to state 64
+    DOT_NE          shift and go to state 65
+    DOT_LT          shift and go to state 66
+    DOT_LE          shift and go to state 67
+    DOT_GT          shift and go to state 68
+    DOT_GE          shift and go to state 69
+    RPAREN          reduce using rule 54 (condition -> expression .)
+    DOT_AND         reduce using rule 54 (condition -> expression .)
+    DOT_OR          reduce using rule 54 (condition -> expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
 
-    expression                     shift and go to state 77
+  ! RPAREN          [ shift and go to state 76 ]
+
 
 state 61
 
-    (36) condition -> expression DOT_GT . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (19) if_stmt -> IF LPAREN condition RPAREN . THEN statements ENDIF
+    (20) if_stmt -> IF LPAREN condition RPAREN . THEN statements ELSE statements ENDIF
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    THEN            shift and go to state 79
 
-    expression                     shift and go to state 78
 
 state 62
 
-    (37) condition -> expression DOT_GE . expression
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (50) condition -> condition DOT_AND . condition
+    (44) condition -> . expression DOT_EQ expression
+    (45) condition -> . expression DOT_NE expression
+    (46) condition -> . expression DOT_LT expression
+    (47) condition -> . expression DOT_LE expression
+    (48) condition -> . expression DOT_GT expression
+    (49) condition -> . expression DOT_GE expression
+    (50) condition -> . condition DOT_AND condition
+    (51) condition -> . condition DOT_OR condition
+    (52) condition -> . DOT_NOT condition
+    (53) condition -> . LPAREN condition RPAREN
+    (54) condition -> . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    DOT_NOT         shift and go to state 46
+    LPAREN          shift and go to state 43
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-    expression                     shift and go to state 79
+    condition                      shift and go to state 80
+    expression                     shift and go to state 45
 
 state 63
 
-    (40) condition -> DOT_NOT condition .
-    (38) condition -> condition . DOT_AND condition
-    (39) condition -> condition . DOT_OR condition
+    (51) condition -> condition DOT_OR . condition
+    (44) condition -> . expression DOT_EQ expression
+    (45) condition -> . expression DOT_NE expression
+    (46) condition -> . expression DOT_LT expression
+    (47) condition -> . expression DOT_LE expression
+    (48) condition -> . expression DOT_GT expression
+    (49) condition -> . expression DOT_GE expression
+    (50) condition -> . condition DOT_AND condition
+    (51) condition -> . condition DOT_OR condition
+    (52) condition -> . DOT_NOT condition
+    (53) condition -> . LPAREN condition RPAREN
+    (54) condition -> . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    RPAREN          reduce using rule 40 (condition -> DOT_NOT condition .)
-    DOT_AND         reduce using rule 40 (condition -> DOT_NOT condition .)
-    DOT_OR          reduce using rule 40 (condition -> DOT_NOT condition .)
+    DOT_NOT         shift and go to state 46
+    LPAREN          shift and go to state 43
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-  ! DOT_AND         [ shift and go to state 55 ]
-  ! DOT_OR          [ shift and go to state 56 ]
-
+    condition                      shift and go to state 81
+    expression                     shift and go to state 45
 
 state 64
 
-    (23) expression -> expression PLUS expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (44) condition -> expression DOT_EQ . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    PLUS            reduce using rule 23 (expression -> expression PLUS expression .)
-    MINUS           reduce using rule 23 (expression -> expression PLUS expression .)
-    END             reduce using rule 23 (expression -> expression PLUS expression .)
-    INTEGER         reduce using rule 23 (expression -> expression PLUS expression .)
-    REAL            reduce using rule 23 (expression -> expression PLUS expression .)
-    LOGICAL         reduce using rule 23 (expression -> expression PLUS expression .)
-    ID              reduce using rule 23 (expression -> expression PLUS expression .)
-    PRINT           reduce using rule 23 (expression -> expression PLUS expression .)
-    READ            reduce using rule 23 (expression -> expression PLUS expression .)
-    IF              reduce using rule 23 (expression -> expression PLUS expression .)
-    ENDIF           reduce using rule 23 (expression -> expression PLUS expression .)
-    ELSE            reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_EQ          reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_NE          reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_LT          reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_LE          reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_GT          reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_GE          reduce using rule 23 (expression -> expression PLUS expression .)
-    RPAREN          reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_AND         reduce using rule 23 (expression -> expression PLUS expression .)
-    DOT_OR          reduce using rule 23 (expression -> expression PLUS expression .)
-    COMMA           reduce using rule 23 (expression -> expression PLUS expression .)
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-  ! TIMES           [ reduce using rule 23 (expression -> expression PLUS expression .) ]
-  ! DIVIDE          [ reduce using rule 23 (expression -> expression PLUS expression .) ]
-  ! PLUS            [ shift and go to state 41 ]
-  ! MINUS           [ shift and go to state 42 ]
-
+    expression                     shift and go to state 82
 
 state 65
 
-    (24) expression -> expression MINUS expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (45) condition -> expression DOT_NE . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    PLUS            reduce using rule 24 (expression -> expression MINUS expression .)
-    MINUS           reduce using rule 24 (expression -> expression MINUS expression .)
-    END             reduce using rule 24 (expression -> expression MINUS expression .)
-    INTEGER         reduce using rule 24 (expression -> expression MINUS expression .)
-    REAL            reduce using rule 24 (expression -> expression MINUS expression .)
-    LOGICAL         reduce using rule 24 (expression -> expression MINUS expression .)
-    ID              reduce using rule 24 (expression -> expression MINUS expression .)
-    PRINT           reduce using rule 24 (expression -> expression MINUS expression .)
-    READ            reduce using rule 24 (expression -> expression MINUS expression .)
-    IF              reduce using rule 24 (expression -> expression MINUS expression .)
-    ENDIF           reduce using rule 24 (expression -> expression MINUS expression .)
-    ELSE            reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_EQ          reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_NE          reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_LT          reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_LE          reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_GT          reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_GE          reduce using rule 24 (expression -> expression MINUS expression .)
-    RPAREN          reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_AND         reduce using rule 24 (expression -> expression MINUS expression .)
-    DOT_OR          reduce using rule 24 (expression -> expression MINUS expression .)
-    COMMA           reduce using rule 24 (expression -> expression MINUS expression .)
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-  ! TIMES           [ reduce using rule 24 (expression -> expression MINUS expression .) ]
-  ! DIVIDE          [ reduce using rule 24 (expression -> expression MINUS expression .) ]
-  ! PLUS            [ shift and go to state 41 ]
-  ! MINUS           [ shift and go to state 42 ]
-
+    expression                     shift and go to state 83
 
 state 66
 
-    (25) expression -> expression TIMES expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (46) condition -> expression DOT_LT . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    PLUS            reduce using rule 25 (expression -> expression TIMES expression .)
-    MINUS           reduce using rule 25 (expression -> expression TIMES expression .)
-    TIMES           reduce using rule 25 (expression -> expression TIMES expression .)
-    DIVIDE          reduce using rule 25 (expression -> expression TIMES expression .)
-    END             reduce using rule 25 (expression -> expression TIMES expression .)
-    INTEGER         reduce using rule 25 (expression -> expression TIMES expression .)
-    REAL            reduce using rule 25 (expression -> expression TIMES expression .)
-    LOGICAL         reduce using rule 25 (expression -> expression TIMES expression .)
-    ID              reduce using rule 25 (expression -> expression TIMES expression .)
-    PRINT           reduce using rule 25 (expression -> expression TIMES expression .)
-    READ            reduce using rule 25 (expression -> expression TIMES expression .)
-    IF              reduce using rule 25 (expression -> expression TIMES expression .)
-    ENDIF           reduce using rule 25 (expression -> expression TIMES expression .)
-    ELSE            reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_EQ          reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_NE          reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_LT          reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_LE          reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_GT          reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_GE          reduce using rule 25 (expression -> expression TIMES expression .)
-    RPAREN          reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_AND         reduce using rule 25 (expression -> expression TIMES expression .)
-    DOT_OR          reduce using rule 25 (expression -> expression TIMES expression .)
-    COMMA           reduce using rule 25 (expression -> expression TIMES expression .)
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-  ! PLUS            [ shift and go to state 41 ]
-  ! MINUS           [ shift and go to state 42 ]
-  ! TIMES           [ shift and go to state 43 ]
-  ! DIVIDE          [ shift and go to state 44 ]
-
+    expression                     shift and go to state 84
 
 state 67
 
-    (26) expression -> expression DIVIDE expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (47) condition -> expression DOT_LE . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    PLUS            reduce using rule 26 (expression -> expression DIVIDE expression .)
-    MINUS           reduce using rule 26 (expression -> expression DIVIDE expression .)
-    TIMES           reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DIVIDE          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    END             reduce using rule 26 (expression -> expression DIVIDE expression .)
-    INTEGER         reduce using rule 26 (expression -> expression DIVIDE expression .)
-    REAL            reduce using rule 26 (expression -> expression DIVIDE expression .)
-    LOGICAL         reduce using rule 26 (expression -> expression DIVIDE expression .)
-    ID              reduce using rule 26 (expression -> expression DIVIDE expression .)
-    PRINT           reduce using rule 26 (expression -> expression DIVIDE expression .)
-    READ            reduce using rule 26 (expression -> expression DIVIDE expression .)
-    IF              reduce using rule 26 (expression -> expression DIVIDE expression .)
-    ENDIF           reduce using rule 26 (expression -> expression DIVIDE expression .)
-    ELSE            reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_EQ          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_NE          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_LT          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_LE          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_GT          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_GE          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    RPAREN          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_AND         reduce using rule 26 (expression -> expression DIVIDE expression .)
-    DOT_OR          reduce using rule 26 (expression -> expression DIVIDE expression .)
-    COMMA           reduce using rule 26 (expression -> expression DIVIDE expression .)
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-  ! PLUS            [ shift and go to state 41 ]
-  ! MINUS           [ shift and go to state 42 ]
-  ! TIMES           [ shift and go to state 43 ]
-  ! DIVIDE          [ shift and go to state 44 ]
-
+    expression                     shift and go to state 85
 
 state 68
 
-    (27) expression -> LPAREN expression RPAREN .
+    (48) condition -> expression DOT_GT . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    PLUS            reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    MINUS           reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    TIMES           reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DIVIDE          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    END             reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    INTEGER         reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    REAL            reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    LOGICAL         reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    ID              reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    PRINT           reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    READ            reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    IF              reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    ENDIF           reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    ELSE            reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_EQ          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_NE          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_LT          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_LE          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_GT          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_GE          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    RPAREN          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_AND         reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    DOT_OR          reduce using rule 27 (expression -> LPAREN expression RPAREN .)
-    COMMA           reduce using rule 27 (expression -> LPAREN expression RPAREN .)
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    expression                     shift and go to state 86
 
 state 69
 
-    (19) print_list -> print_list COMMA . printable
-    (21) printable -> . expression
-    (22) printable -> . STRING
-    (23) expression -> . expression PLUS expression
-    (24) expression -> . expression MINUS expression
-    (25) expression -> . expression TIMES expression
-    (26) expression -> . expression DIVIDE expression
-    (27) expression -> . LPAREN expression RPAREN
-    (28) expression -> . NUMBER
-    (29) expression -> . ID
-    (30) expression -> . DOT_TRUE
-    (31) expression -> . DOT_FALSE
+    (49) condition -> expression DOT_GE . expression
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    STRING          shift and go to state 50
-    LPAREN          shift and go to state 30
-    NUMBER          shift and go to state 31
-    ID              shift and go to state 28
-    DOT_TRUE        shift and go to state 32
-    DOT_FALSE       shift and go to state 33
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-    printable                      shift and go to state 80
-    expression                     shift and go to state 49
+    expression                     shift and go to state 87
 
 state 70
 
-    (41) condition -> LPAREN condition RPAREN .
+    (52) condition -> DOT_NOT condition .
+    (50) condition -> condition . DOT_AND condition
+    (51) condition -> condition . DOT_OR condition
 
-    RPAREN          reduce using rule 41 (condition -> LPAREN condition RPAREN .)
-    DOT_AND         reduce using rule 41 (condition -> LPAREN condition RPAREN .)
-    DOT_OR          reduce using rule 41 (condition -> LPAREN condition RPAREN .)
+    RPAREN          reduce using rule 52 (condition -> DOT_NOT condition .)
+    DOT_AND         reduce using rule 52 (condition -> DOT_NOT condition .)
+    DOT_OR          reduce using rule 52 (condition -> DOT_NOT condition .)
+
+  ! DOT_AND         [ shift and go to state 62 ]
+  ! DOT_OR          [ shift and go to state 63 ]
 
 
 state 71
 
-    (17) if_stmt -> IF LPAREN condition RPAREN THEN . statements ENDIF
-    (18) if_stmt -> IF LPAREN condition RPAREN THEN . statements ELSE statements ENDIF
-    (2) statements -> . statements statement
-    (3) statements -> . statement
-    (4) statement -> . declaration
-    (5) statement -> . assignment
-    (6) statement -> . print_stmt
-    (7) statement -> . read_stmt
-    (8) statement -> . if_stmt
-    (9) declaration -> . INTEGER id_list
-    (10) declaration -> . REAL id_list
-    (11) declaration -> . LOGICAL id_list
-    (14) assignment -> . ID ASSIGN expression
-    (15) print_stmt -> . PRINT TIMES COMMA print_list
-    (16) read_stmt -> . READ TIMES COMMA id_list
-    (17) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> DO NUMBER ID ASSIGN . expression COMMA expression do_body_statements labeled_continue
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    INTEGER         shift and go to state 12
-    REAL            shift and go to state 13
-    LOGICAL         shift and go to state 14
-    ID              shift and go to state 4
-    PRINT           shift and go to state 15
-    READ            shift and go to state 16
-    IF              shift and go to state 17
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
-    statements                     shift and go to state 81
-    statement                      shift and go to state 6
-    declaration                    shift and go to state 7
-    assignment                     shift and go to state 8
-    print_stmt                     shift and go to state 9
-    read_stmt                      shift and go to state 10
-    if_stmt                        shift and go to state 11
+    expression                     shift and go to state 88
 
 state 72
 
-    (38) condition -> condition DOT_AND condition .
-    (38) condition -> condition . DOT_AND condition
-    (39) condition -> condition . DOT_OR condition
+    (35) expression -> expression PLUS expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    RPAREN          reduce using rule 38 (condition -> condition DOT_AND condition .)
-    DOT_AND         reduce using rule 38 (condition -> condition DOT_AND condition .)
-    DOT_OR          reduce using rule 38 (condition -> condition DOT_AND condition .)
+    PLUS            reduce using rule 35 (expression -> expression PLUS expression .)
+    MINUS           reduce using rule 35 (expression -> expression PLUS expression .)
+    END             reduce using rule 35 (expression -> expression PLUS expression .)
+    INTEGER         reduce using rule 35 (expression -> expression PLUS expression .)
+    REAL            reduce using rule 35 (expression -> expression PLUS expression .)
+    LOGICAL         reduce using rule 35 (expression -> expression PLUS expression .)
+    ID              reduce using rule 35 (expression -> expression PLUS expression .)
+    PRINT           reduce using rule 35 (expression -> expression PLUS expression .)
+    READ            reduce using rule 35 (expression -> expression PLUS expression .)
+    IF              reduce using rule 35 (expression -> expression PLUS expression .)
+    DO              reduce using rule 35 (expression -> expression PLUS expression .)
+    NUMBER          reduce using rule 35 (expression -> expression PLUS expression .)
+    ENDIF           reduce using rule 35 (expression -> expression PLUS expression .)
+    ELSE            reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_EQ          reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_NE          reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_LT          reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_LE          reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_GT          reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_GE          reduce using rule 35 (expression -> expression PLUS expression .)
+    RPAREN          reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_AND         reduce using rule 35 (expression -> expression PLUS expression .)
+    DOT_OR          reduce using rule 35 (expression -> expression PLUS expression .)
+    COMMA           reduce using rule 35 (expression -> expression PLUS expression .)
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
 
-  ! DOT_AND         [ shift and go to state 55 ]
-  ! DOT_OR          [ shift and go to state 56 ]
+  ! TIMES           [ reduce using rule 35 (expression -> expression PLUS expression .) ]
+  ! DIVIDE          [ reduce using rule 35 (expression -> expression PLUS expression .) ]
+  ! PLUS            [ shift and go to state 48 ]
+  ! MINUS           [ shift and go to state 49 ]
 
 
 state 73
 
-    (39) condition -> condition DOT_OR condition .
-    (38) condition -> condition . DOT_AND condition
-    (39) condition -> condition . DOT_OR condition
+    (36) expression -> expression MINUS expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    RPAREN          reduce using rule 39 (condition -> condition DOT_OR condition .)
-    DOT_OR          reduce using rule 39 (condition -> condition DOT_OR condition .)
-    DOT_AND         shift and go to state 55
+    PLUS            reduce using rule 36 (expression -> expression MINUS expression .)
+    MINUS           reduce using rule 36 (expression -> expression MINUS expression .)
+    END             reduce using rule 36 (expression -> expression MINUS expression .)
+    INTEGER         reduce using rule 36 (expression -> expression MINUS expression .)
+    REAL            reduce using rule 36 (expression -> expression MINUS expression .)
+    LOGICAL         reduce using rule 36 (expression -> expression MINUS expression .)
+    ID              reduce using rule 36 (expression -> expression MINUS expression .)
+    PRINT           reduce using rule 36 (expression -> expression MINUS expression .)
+    READ            reduce using rule 36 (expression -> expression MINUS expression .)
+    IF              reduce using rule 36 (expression -> expression MINUS expression .)
+    DO              reduce using rule 36 (expression -> expression MINUS expression .)
+    NUMBER          reduce using rule 36 (expression -> expression MINUS expression .)
+    ENDIF           reduce using rule 36 (expression -> expression MINUS expression .)
+    ELSE            reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_EQ          reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_NE          reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_LT          reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_LE          reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_GT          reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_GE          reduce using rule 36 (expression -> expression MINUS expression .)
+    RPAREN          reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_AND         reduce using rule 36 (expression -> expression MINUS expression .)
+    DOT_OR          reduce using rule 36 (expression -> expression MINUS expression .)
+    COMMA           reduce using rule 36 (expression -> expression MINUS expression .)
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
 
-  ! DOT_AND         [ reduce using rule 39 (condition -> condition DOT_OR condition .) ]
-  ! DOT_OR          [ shift and go to state 56 ]
+  ! TIMES           [ reduce using rule 36 (expression -> expression MINUS expression .) ]
+  ! DIVIDE          [ reduce using rule 36 (expression -> expression MINUS expression .) ]
+  ! PLUS            [ shift and go to state 48 ]
+  ! MINUS           [ shift and go to state 49 ]
 
 
 state 74
 
-    (32) condition -> expression DOT_EQ expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (37) expression -> expression TIMES expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    RPAREN          reduce using rule 32 (condition -> expression DOT_EQ expression .)
-    DOT_AND         reduce using rule 32 (condition -> expression DOT_EQ expression .)
-    DOT_OR          reduce using rule 32 (condition -> expression DOT_EQ expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    PLUS            reduce using rule 37 (expression -> expression TIMES expression .)
+    MINUS           reduce using rule 37 (expression -> expression TIMES expression .)
+    TIMES           reduce using rule 37 (expression -> expression TIMES expression .)
+    DIVIDE          reduce using rule 37 (expression -> expression TIMES expression .)
+    END             reduce using rule 37 (expression -> expression TIMES expression .)
+    INTEGER         reduce using rule 37 (expression -> expression TIMES expression .)
+    REAL            reduce using rule 37 (expression -> expression TIMES expression .)
+    LOGICAL         reduce using rule 37 (expression -> expression TIMES expression .)
+    ID              reduce using rule 37 (expression -> expression TIMES expression .)
+    PRINT           reduce using rule 37 (expression -> expression TIMES expression .)
+    READ            reduce using rule 37 (expression -> expression TIMES expression .)
+    IF              reduce using rule 37 (expression -> expression TIMES expression .)
+    DO              reduce using rule 37 (expression -> expression TIMES expression .)
+    NUMBER          reduce using rule 37 (expression -> expression TIMES expression .)
+    ENDIF           reduce using rule 37 (expression -> expression TIMES expression .)
+    ELSE            reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_EQ          reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_NE          reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_LT          reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_LE          reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_GT          reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_GE          reduce using rule 37 (expression -> expression TIMES expression .)
+    RPAREN          reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_AND         reduce using rule 37 (expression -> expression TIMES expression .)
+    DOT_OR          reduce using rule 37 (expression -> expression TIMES expression .)
+    COMMA           reduce using rule 37 (expression -> expression TIMES expression .)
+
+  ! PLUS            [ shift and go to state 48 ]
+  ! MINUS           [ shift and go to state 49 ]
+  ! TIMES           [ shift and go to state 50 ]
+  ! DIVIDE          [ shift and go to state 51 ]
 
 
 state 75
 
-    (33) condition -> expression DOT_NE expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (38) expression -> expression DIVIDE expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
 
-    RPAREN          reduce using rule 33 (condition -> expression DOT_NE expression .)
-    DOT_AND         reduce using rule 33 (condition -> expression DOT_NE expression .)
-    DOT_OR          reduce using rule 33 (condition -> expression DOT_NE expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    PLUS            reduce using rule 38 (expression -> expression DIVIDE expression .)
+    MINUS           reduce using rule 38 (expression -> expression DIVIDE expression .)
+    TIMES           reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DIVIDE          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    END             reduce using rule 38 (expression -> expression DIVIDE expression .)
+    INTEGER         reduce using rule 38 (expression -> expression DIVIDE expression .)
+    REAL            reduce using rule 38 (expression -> expression DIVIDE expression .)
+    LOGICAL         reduce using rule 38 (expression -> expression DIVIDE expression .)
+    ID              reduce using rule 38 (expression -> expression DIVIDE expression .)
+    PRINT           reduce using rule 38 (expression -> expression DIVIDE expression .)
+    READ            reduce using rule 38 (expression -> expression DIVIDE expression .)
+    IF              reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DO              reduce using rule 38 (expression -> expression DIVIDE expression .)
+    NUMBER          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    ENDIF           reduce using rule 38 (expression -> expression DIVIDE expression .)
+    ELSE            reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_EQ          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_NE          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_LT          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_LE          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_GT          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_GE          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    RPAREN          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_AND         reduce using rule 38 (expression -> expression DIVIDE expression .)
+    DOT_OR          reduce using rule 38 (expression -> expression DIVIDE expression .)
+    COMMA           reduce using rule 38 (expression -> expression DIVIDE expression .)
+
+  ! PLUS            [ shift and go to state 48 ]
+  ! MINUS           [ shift and go to state 49 ]
+  ! TIMES           [ shift and go to state 50 ]
+  ! DIVIDE          [ shift and go to state 51 ]
 
 
 state 76
 
-    (34) condition -> expression DOT_LT expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (39) expression -> LPAREN expression RPAREN .
 
-    RPAREN          reduce using rule 34 (condition -> expression DOT_LT expression .)
-    DOT_AND         reduce using rule 34 (condition -> expression DOT_LT expression .)
-    DOT_OR          reduce using rule 34 (condition -> expression DOT_LT expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    PLUS            reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    MINUS           reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    TIMES           reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DIVIDE          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    END             reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    INTEGER         reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    REAL            reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    LOGICAL         reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    ID              reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    PRINT           reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    READ            reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    IF              reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DO              reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    NUMBER          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    ENDIF           reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    ELSE            reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_EQ          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_NE          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_LT          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_LE          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_GT          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_GE          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_AND         reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    DOT_OR          reduce using rule 39 (expression -> LPAREN expression RPAREN .)
+    COMMA           reduce using rule 39 (expression -> LPAREN expression RPAREN .)
 
 
 state 77
 
-    (35) condition -> expression DOT_LE expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (31) print_list -> print_list COMMA . printable
+    (33) printable -> . expression
+    (34) printable -> . STRING
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    RPAREN          reduce using rule 35 (condition -> expression DOT_LE expression .)
-    DOT_AND         reduce using rule 35 (condition -> expression DOT_LE expression .)
-    DOT_OR          reduce using rule 35 (condition -> expression DOT_LE expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    STRING          shift and go to state 57
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
 
+    printable                      shift and go to state 89
+    expression                     shift and go to state 56
 
 state 78
 
-    (36) condition -> expression DOT_GT expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
+    (53) condition -> LPAREN condition RPAREN .
 
-    RPAREN          reduce using rule 36 (condition -> expression DOT_GT expression .)
-    DOT_AND         reduce using rule 36 (condition -> expression DOT_GT expression .)
-    DOT_OR          reduce using rule 36 (condition -> expression DOT_GT expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
+    RPAREN          reduce using rule 53 (condition -> LPAREN condition RPAREN .)
+    DOT_AND         reduce using rule 53 (condition -> LPAREN condition RPAREN .)
+    DOT_OR          reduce using rule 53 (condition -> LPAREN condition RPAREN .)
 
 
 state 79
 
-    (37) condition -> expression DOT_GE expression .
-    (23) expression -> expression . PLUS expression
-    (24) expression -> expression . MINUS expression
-    (25) expression -> expression . TIMES expression
-    (26) expression -> expression . DIVIDE expression
-
-    RPAREN          reduce using rule 37 (condition -> expression DOT_GE expression .)
-    DOT_AND         reduce using rule 37 (condition -> expression DOT_GE expression .)
-    DOT_OR          reduce using rule 37 (condition -> expression DOT_GE expression .)
-    PLUS            shift and go to state 41
-    MINUS           shift and go to state 42
-    TIMES           shift and go to state 43
-    DIVIDE          shift and go to state 44
-
-
-state 80
-
-    (19) print_list -> print_list COMMA printable .
-
-    COMMA           reduce using rule 19 (print_list -> print_list COMMA printable .)
-    END             reduce using rule 19 (print_list -> print_list COMMA printable .)
-    INTEGER         reduce using rule 19 (print_list -> print_list COMMA printable .)
-    REAL            reduce using rule 19 (print_list -> print_list COMMA printable .)
-    LOGICAL         reduce using rule 19 (print_list -> print_list COMMA printable .)
-    ID              reduce using rule 19 (print_list -> print_list COMMA printable .)
-    PRINT           reduce using rule 19 (print_list -> print_list COMMA printable .)
-    READ            reduce using rule 19 (print_list -> print_list COMMA printable .)
-    IF              reduce using rule 19 (print_list -> print_list COMMA printable .)
-    ENDIF           reduce using rule 19 (print_list -> print_list COMMA printable .)
-    ELSE            reduce using rule 19 (print_list -> print_list COMMA printable .)
-
-
-state 81
-
-    (17) if_stmt -> IF LPAREN condition RPAREN THEN statements . ENDIF
-    (18) if_stmt -> IF LPAREN condition RPAREN THEN statements . ELSE statements ENDIF
-    (2) statements -> statements . statement
-    (4) statement -> . declaration
-    (5) statement -> . assignment
-    (6) statement -> . print_stmt
-    (7) statement -> . read_stmt
-    (8) statement -> . if_stmt
-    (9) declaration -> . INTEGER id_list
-    (10) declaration -> . REAL id_list
-    (11) declaration -> . LOGICAL id_list
-    (14) assignment -> . ID ASSIGN expression
-    (15) print_stmt -> . PRINT TIMES COMMA print_list
-    (16) read_stmt -> . READ TIMES COMMA id_list
-    (17) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
-
-    ENDIF           shift and go to state 82
-    ELSE            shift and go to state 83
-    INTEGER         shift and go to state 12
-    REAL            shift and go to state 13
-    LOGICAL         shift and go to state 14
-    ID              shift and go to state 4
-    PRINT           shift and go to state 15
-    READ            shift and go to state 16
-    IF              shift and go to state 17
-
-    statement                      shift and go to state 20
-    declaration                    shift and go to state 7
-    assignment                     shift and go to state 8
-    print_stmt                     shift and go to state 9
-    read_stmt                      shift and go to state 10
-    if_stmt                        shift and go to state 11
-
-state 82
-
-    (17) if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .
-
-    END             reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    INTEGER         reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    REAL            reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    LOGICAL         reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    ID              reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    PRINT           reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    READ            reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    IF              reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    ENDIF           reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-    ELSE            reduce using rule 17 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
-
-
-state 83
-
-    (18) if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE . statements ENDIF
+    (19) if_stmt -> IF LPAREN condition RPAREN THEN . statements ENDIF
+    (20) if_stmt -> IF LPAREN condition RPAREN THEN . statements ELSE statements ENDIF
     (2) statements -> . statements statement
     (3) statements -> . statement
     (4) statement -> . declaration
@@ -1775,77 +1728,610 @@ state 83
     (6) statement -> . print_stmt
     (7) statement -> . read_stmt
     (8) statement -> . if_stmt
-    (9) declaration -> . INTEGER id_list
-    (10) declaration -> . REAL id_list
-    (11) declaration -> . LOGICAL id_list
-    (14) assignment -> . ID ASSIGN expression
-    (15) print_stmt -> . PRINT TIMES COMMA print_list
-    (16) read_stmt -> . READ TIMES COMMA id_list
-    (17) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (9) statement -> . do_stmt
+    (10) statement -> . labeled_continue
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+    (22) labeled_continue -> . NUMBER CONTINUE
 
-    INTEGER         shift and go to state 12
-    REAL            shift and go to state 13
-    LOGICAL         shift and go to state 14
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
     ID              shift and go to state 4
-    PRINT           shift and go to state 15
-    READ            shift and go to state 16
-    IF              shift and go to state 17
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+    NUMBER          shift and go to state 21
 
-    statements                     shift and go to state 84
+    statements                     shift and go to state 90
     statement                      shift and go to state 6
     declaration                    shift and go to state 7
     assignment                     shift and go to state 8
     print_stmt                     shift and go to state 9
     read_stmt                      shift and go to state 10
     if_stmt                        shift and go to state 11
+    do_stmt                        shift and go to state 12
+    labeled_continue               shift and go to state 13
+
+state 80
+
+    (50) condition -> condition DOT_AND condition .
+    (50) condition -> condition . DOT_AND condition
+    (51) condition -> condition . DOT_OR condition
+
+    RPAREN          reduce using rule 50 (condition -> condition DOT_AND condition .)
+    DOT_AND         reduce using rule 50 (condition -> condition DOT_AND condition .)
+    DOT_OR          reduce using rule 50 (condition -> condition DOT_AND condition .)
+
+  ! DOT_AND         [ shift and go to state 62 ]
+  ! DOT_OR          [ shift and go to state 63 ]
+
+
+state 81
+
+    (51) condition -> condition DOT_OR condition .
+    (50) condition -> condition . DOT_AND condition
+    (51) condition -> condition . DOT_OR condition
+
+    RPAREN          reduce using rule 51 (condition -> condition DOT_OR condition .)
+    DOT_OR          reduce using rule 51 (condition -> condition DOT_OR condition .)
+    DOT_AND         shift and go to state 62
+
+  ! DOT_AND         [ reduce using rule 51 (condition -> condition DOT_OR condition .) ]
+  ! DOT_OR          [ shift and go to state 63 ]
+
+
+state 82
+
+    (44) condition -> expression DOT_EQ expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+
+    RPAREN          reduce using rule 44 (condition -> expression DOT_EQ expression .)
+    DOT_AND         reduce using rule 44 (condition -> expression DOT_EQ expression .)
+    DOT_OR          reduce using rule 44 (condition -> expression DOT_EQ expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+
+
+state 83
+
+    (45) condition -> expression DOT_NE expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+
+    RPAREN          reduce using rule 45 (condition -> expression DOT_NE expression .)
+    DOT_AND         reduce using rule 45 (condition -> expression DOT_NE expression .)
+    DOT_OR          reduce using rule 45 (condition -> expression DOT_NE expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+
 
 state 84
 
-    (18) if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements . ENDIF
+    (46) condition -> expression DOT_LT expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+
+    RPAREN          reduce using rule 46 (condition -> expression DOT_LT expression .)
+    DOT_AND         reduce using rule 46 (condition -> expression DOT_LT expression .)
+    DOT_OR          reduce using rule 46 (condition -> expression DOT_LT expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+
+
+state 85
+
+    (47) condition -> expression DOT_LE expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+
+    RPAREN          reduce using rule 47 (condition -> expression DOT_LE expression .)
+    DOT_AND         reduce using rule 47 (condition -> expression DOT_LE expression .)
+    DOT_OR          reduce using rule 47 (condition -> expression DOT_LE expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+
+
+state 86
+
+    (48) condition -> expression DOT_GT expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+
+    RPAREN          reduce using rule 48 (condition -> expression DOT_GT expression .)
+    DOT_AND         reduce using rule 48 (condition -> expression DOT_GT expression .)
+    DOT_OR          reduce using rule 48 (condition -> expression DOT_GT expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+
+
+state 87
+
+    (49) condition -> expression DOT_GE expression .
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+
+    RPAREN          reduce using rule 49 (condition -> expression DOT_GE expression .)
+    DOT_AND         reduce using rule 49 (condition -> expression DOT_GE expression .)
+    DOT_OR          reduce using rule 49 (condition -> expression DOT_GE expression .)
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+
+
+state 88
+
+    (21) do_stmt -> DO NUMBER ID ASSIGN expression . COMMA expression do_body_statements labeled_continue
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+
+    COMMA           shift and go to state 91
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+
+
+state 89
+
+    (31) print_list -> print_list COMMA printable .
+
+    COMMA           reduce using rule 31 (print_list -> print_list COMMA printable .)
+    END             reduce using rule 31 (print_list -> print_list COMMA printable .)
+    INTEGER         reduce using rule 31 (print_list -> print_list COMMA printable .)
+    REAL            reduce using rule 31 (print_list -> print_list COMMA printable .)
+    LOGICAL         reduce using rule 31 (print_list -> print_list COMMA printable .)
+    ID              reduce using rule 31 (print_list -> print_list COMMA printable .)
+    PRINT           reduce using rule 31 (print_list -> print_list COMMA printable .)
+    READ            reduce using rule 31 (print_list -> print_list COMMA printable .)
+    IF              reduce using rule 31 (print_list -> print_list COMMA printable .)
+    DO              reduce using rule 31 (print_list -> print_list COMMA printable .)
+    NUMBER          reduce using rule 31 (print_list -> print_list COMMA printable .)
+    ENDIF           reduce using rule 31 (print_list -> print_list COMMA printable .)
+    ELSE            reduce using rule 31 (print_list -> print_list COMMA printable .)
+
+
+state 90
+
+    (19) if_stmt -> IF LPAREN condition RPAREN THEN statements . ENDIF
+    (20) if_stmt -> IF LPAREN condition RPAREN THEN statements . ELSE statements ENDIF
     (2) statements -> statements . statement
     (4) statement -> . declaration
     (5) statement -> . assignment
     (6) statement -> . print_stmt
     (7) statement -> . read_stmt
     (8) statement -> . if_stmt
-    (9) declaration -> . INTEGER id_list
-    (10) declaration -> . REAL id_list
-    (11) declaration -> . LOGICAL id_list
-    (14) assignment -> . ID ASSIGN expression
-    (15) print_stmt -> . PRINT TIMES COMMA print_list
-    (16) read_stmt -> . READ TIMES COMMA id_list
-    (17) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
-    (18) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (9) statement -> . do_stmt
+    (10) statement -> . labeled_continue
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+    (22) labeled_continue -> . NUMBER CONTINUE
 
-    ENDIF           shift and go to state 85
-    INTEGER         shift and go to state 12
-    REAL            shift and go to state 13
-    LOGICAL         shift and go to state 14
+    ENDIF           shift and go to state 92
+    ELSE            shift and go to state 93
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
     ID              shift and go to state 4
-    PRINT           shift and go to state 15
-    READ            shift and go to state 16
-    IF              shift and go to state 17
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+    NUMBER          shift and go to state 21
 
-    statement                      shift and go to state 20
+    statement                      shift and go to state 24
     declaration                    shift and go to state 7
     assignment                     shift and go to state 8
     print_stmt                     shift and go to state 9
     read_stmt                      shift and go to state 10
     if_stmt                        shift and go to state 11
+    do_stmt                        shift and go to state 12
+    labeled_continue               shift and go to state 13
 
-state 85
+state 91
 
-    (18) if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .
+    (21) do_stmt -> DO NUMBER ID ASSIGN expression COMMA . expression do_body_statements labeled_continue
+    (35) expression -> . expression PLUS expression
+    (36) expression -> . expression MINUS expression
+    (37) expression -> . expression TIMES expression
+    (38) expression -> . expression DIVIDE expression
+    (39) expression -> . LPAREN expression RPAREN
+    (40) expression -> . NUMBER
+    (41) expression -> . ID
+    (42) expression -> . DOT_TRUE
+    (43) expression -> . DOT_FALSE
 
-    END             reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    INTEGER         reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    REAL            reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    LOGICAL         reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    ID              reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    PRINT           reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    READ            reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    IF              reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    ENDIF           reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
-    ELSE            reduce using rule 18 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    LPAREN          shift and go to state 36
+    NUMBER          shift and go to state 37
+    ID              shift and go to state 34
+    DOT_TRUE        shift and go to state 38
+    DOT_FALSE       shift and go to state 39
+
+    expression                     shift and go to state 94
+
+state 92
+
+    (19) if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .
+
+    END             reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    INTEGER         reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    REAL            reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    LOGICAL         reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    ID              reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    PRINT           reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    READ            reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    IF              reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    DO              reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    NUMBER          reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    ENDIF           reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+    ELSE            reduce using rule 19 (if_stmt -> IF LPAREN condition RPAREN THEN statements ENDIF .)
+
+
+state 93
+
+    (20) if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE . statements ENDIF
+    (2) statements -> . statements statement
+    (3) statements -> . statement
+    (4) statement -> . declaration
+    (5) statement -> . assignment
+    (6) statement -> . print_stmt
+    (7) statement -> . read_stmt
+    (8) statement -> . if_stmt
+    (9) statement -> . do_stmt
+    (10) statement -> . labeled_continue
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+    (22) labeled_continue -> . NUMBER CONTINUE
+
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
+    ID              shift and go to state 4
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+    NUMBER          shift and go to state 21
+
+    statements                     shift and go to state 95
+    statement                      shift and go to state 6
+    declaration                    shift and go to state 7
+    assignment                     shift and go to state 8
+    print_stmt                     shift and go to state 9
+    read_stmt                      shift and go to state 10
+    if_stmt                        shift and go to state 11
+    do_stmt                        shift and go to state 12
+    labeled_continue               shift and go to state 13
+
+state 94
+
+    (21) do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression . do_body_statements labeled_continue
+    (35) expression -> expression . PLUS expression
+    (36) expression -> expression . MINUS expression
+    (37) expression -> expression . TIMES expression
+    (38) expression -> expression . DIVIDE expression
+    (23) do_body_statements -> . do_body_statements do_body_statement
+    (24) do_body_statements -> . do_body_statement
+    (25) do_body_statement -> . declaration
+    (26) do_body_statement -> . assignment
+    (27) do_body_statement -> . print_stmt
+    (28) do_body_statement -> . read_stmt
+    (29) do_body_statement -> . if_stmt
+    (30) do_body_statement -> . do_stmt
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+
+    PLUS            shift and go to state 48
+    MINUS           shift and go to state 49
+    TIMES           shift and go to state 50
+    DIVIDE          shift and go to state 51
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
+    ID              shift and go to state 4
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+
+    do_body_statements             shift and go to state 96
+    do_body_statement              shift and go to state 97
+    declaration                    shift and go to state 98
+    assignment                     shift and go to state 99
+    print_stmt                     shift and go to state 100
+    read_stmt                      shift and go to state 101
+    if_stmt                        shift and go to state 102
+    do_stmt                        shift and go to state 103
+
+state 95
+
+    (20) if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements . ENDIF
+    (2) statements -> statements . statement
+    (4) statement -> . declaration
+    (5) statement -> . assignment
+    (6) statement -> . print_stmt
+    (7) statement -> . read_stmt
+    (8) statement -> . if_stmt
+    (9) statement -> . do_stmt
+    (10) statement -> . labeled_continue
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+    (22) labeled_continue -> . NUMBER CONTINUE
+
+    ENDIF           shift and go to state 104
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
+    ID              shift and go to state 4
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+    NUMBER          shift and go to state 21
+
+    statement                      shift and go to state 24
+    declaration                    shift and go to state 7
+    assignment                     shift and go to state 8
+    print_stmt                     shift and go to state 9
+    read_stmt                      shift and go to state 10
+    if_stmt                        shift and go to state 11
+    do_stmt                        shift and go to state 12
+    labeled_continue               shift and go to state 13
+
+state 96
+
+    (21) do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements . labeled_continue
+    (23) do_body_statements -> do_body_statements . do_body_statement
+    (22) labeled_continue -> . NUMBER CONTINUE
+    (25) do_body_statement -> . declaration
+    (26) do_body_statement -> . assignment
+    (27) do_body_statement -> . print_stmt
+    (28) do_body_statement -> . read_stmt
+    (29) do_body_statement -> . if_stmt
+    (30) do_body_statement -> . do_stmt
+    (11) declaration -> . INTEGER id_list
+    (12) declaration -> . REAL id_list
+    (13) declaration -> . LOGICAL id_list
+    (16) assignment -> . ID ASSIGN expression
+    (17) print_stmt -> . PRINT TIMES COMMA print_list
+    (18) read_stmt -> . READ TIMES COMMA id_list
+    (19) if_stmt -> . IF LPAREN condition RPAREN THEN statements ENDIF
+    (20) if_stmt -> . IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF
+    (21) do_stmt -> . DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue
+
+    NUMBER          shift and go to state 21
+    INTEGER         shift and go to state 14
+    REAL            shift and go to state 15
+    LOGICAL         shift and go to state 16
+    ID              shift and go to state 4
+    PRINT           shift and go to state 17
+    READ            shift and go to state 18
+    IF              shift and go to state 19
+    DO              shift and go to state 20
+
+    labeled_continue               shift and go to state 105
+    do_body_statement              shift and go to state 106
+    declaration                    shift and go to state 98
+    assignment                     shift and go to state 99
+    print_stmt                     shift and go to state 100
+    read_stmt                      shift and go to state 101
+    if_stmt                        shift and go to state 102
+    do_stmt                        shift and go to state 103
+
+state 97
+
+    (24) do_body_statements -> do_body_statement .
+
+    NUMBER          reduce using rule 24 (do_body_statements -> do_body_statement .)
+    INTEGER         reduce using rule 24 (do_body_statements -> do_body_statement .)
+    REAL            reduce using rule 24 (do_body_statements -> do_body_statement .)
+    LOGICAL         reduce using rule 24 (do_body_statements -> do_body_statement .)
+    ID              reduce using rule 24 (do_body_statements -> do_body_statement .)
+    PRINT           reduce using rule 24 (do_body_statements -> do_body_statement .)
+    READ            reduce using rule 24 (do_body_statements -> do_body_statement .)
+    IF              reduce using rule 24 (do_body_statements -> do_body_statement .)
+    DO              reduce using rule 24 (do_body_statements -> do_body_statement .)
+
+
+state 98
+
+    (25) do_body_statement -> declaration .
+
+    NUMBER          reduce using rule 25 (do_body_statement -> declaration .)
+    INTEGER         reduce using rule 25 (do_body_statement -> declaration .)
+    REAL            reduce using rule 25 (do_body_statement -> declaration .)
+    LOGICAL         reduce using rule 25 (do_body_statement -> declaration .)
+    ID              reduce using rule 25 (do_body_statement -> declaration .)
+    PRINT           reduce using rule 25 (do_body_statement -> declaration .)
+    READ            reduce using rule 25 (do_body_statement -> declaration .)
+    IF              reduce using rule 25 (do_body_statement -> declaration .)
+    DO              reduce using rule 25 (do_body_statement -> declaration .)
+
+
+state 99
+
+    (26) do_body_statement -> assignment .
+
+    NUMBER          reduce using rule 26 (do_body_statement -> assignment .)
+    INTEGER         reduce using rule 26 (do_body_statement -> assignment .)
+    REAL            reduce using rule 26 (do_body_statement -> assignment .)
+    LOGICAL         reduce using rule 26 (do_body_statement -> assignment .)
+    ID              reduce using rule 26 (do_body_statement -> assignment .)
+    PRINT           reduce using rule 26 (do_body_statement -> assignment .)
+    READ            reduce using rule 26 (do_body_statement -> assignment .)
+    IF              reduce using rule 26 (do_body_statement -> assignment .)
+    DO              reduce using rule 26 (do_body_statement -> assignment .)
+
+
+state 100
+
+    (27) do_body_statement -> print_stmt .
+
+    NUMBER          reduce using rule 27 (do_body_statement -> print_stmt .)
+    INTEGER         reduce using rule 27 (do_body_statement -> print_stmt .)
+    REAL            reduce using rule 27 (do_body_statement -> print_stmt .)
+    LOGICAL         reduce using rule 27 (do_body_statement -> print_stmt .)
+    ID              reduce using rule 27 (do_body_statement -> print_stmt .)
+    PRINT           reduce using rule 27 (do_body_statement -> print_stmt .)
+    READ            reduce using rule 27 (do_body_statement -> print_stmt .)
+    IF              reduce using rule 27 (do_body_statement -> print_stmt .)
+    DO              reduce using rule 27 (do_body_statement -> print_stmt .)
+
+
+state 101
+
+    (28) do_body_statement -> read_stmt .
+
+    NUMBER          reduce using rule 28 (do_body_statement -> read_stmt .)
+    INTEGER         reduce using rule 28 (do_body_statement -> read_stmt .)
+    REAL            reduce using rule 28 (do_body_statement -> read_stmt .)
+    LOGICAL         reduce using rule 28 (do_body_statement -> read_stmt .)
+    ID              reduce using rule 28 (do_body_statement -> read_stmt .)
+    PRINT           reduce using rule 28 (do_body_statement -> read_stmt .)
+    READ            reduce using rule 28 (do_body_statement -> read_stmt .)
+    IF              reduce using rule 28 (do_body_statement -> read_stmt .)
+    DO              reduce using rule 28 (do_body_statement -> read_stmt .)
+
+
+state 102
+
+    (29) do_body_statement -> if_stmt .
+
+    NUMBER          reduce using rule 29 (do_body_statement -> if_stmt .)
+    INTEGER         reduce using rule 29 (do_body_statement -> if_stmt .)
+    REAL            reduce using rule 29 (do_body_statement -> if_stmt .)
+    LOGICAL         reduce using rule 29 (do_body_statement -> if_stmt .)
+    ID              reduce using rule 29 (do_body_statement -> if_stmt .)
+    PRINT           reduce using rule 29 (do_body_statement -> if_stmt .)
+    READ            reduce using rule 29 (do_body_statement -> if_stmt .)
+    IF              reduce using rule 29 (do_body_statement -> if_stmt .)
+    DO              reduce using rule 29 (do_body_statement -> if_stmt .)
+
+
+state 103
+
+    (30) do_body_statement -> do_stmt .
+
+    NUMBER          reduce using rule 30 (do_body_statement -> do_stmt .)
+    INTEGER         reduce using rule 30 (do_body_statement -> do_stmt .)
+    REAL            reduce using rule 30 (do_body_statement -> do_stmt .)
+    LOGICAL         reduce using rule 30 (do_body_statement -> do_stmt .)
+    ID              reduce using rule 30 (do_body_statement -> do_stmt .)
+    PRINT           reduce using rule 30 (do_body_statement -> do_stmt .)
+    READ            reduce using rule 30 (do_body_statement -> do_stmt .)
+    IF              reduce using rule 30 (do_body_statement -> do_stmt .)
+    DO              reduce using rule 30 (do_body_statement -> do_stmt .)
+
+
+state 104
+
+    (20) if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .
+
+    END             reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    INTEGER         reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    REAL            reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    LOGICAL         reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    ID              reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    PRINT           reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    READ            reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    IF              reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    DO              reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    NUMBER          reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    ENDIF           reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+    ELSE            reduce using rule 20 (if_stmt -> IF LPAREN condition RPAREN THEN statements ELSE statements ENDIF .)
+
+
+state 105
+
+    (21) do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .
+
+    END             reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    INTEGER         reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    REAL            reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    LOGICAL         reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    ID              reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    PRINT           reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    READ            reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    IF              reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    DO              reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    NUMBER          reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    ENDIF           reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+    ELSE            reduce using rule 21 (do_stmt -> DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue .)
+
+
+state 106
+
+    (23) do_body_statements -> do_body_statements do_body_statement .
+
+    NUMBER          reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    INTEGER         reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    REAL            reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    LOGICAL         reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    ID              reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    PRINT           reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    READ            reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    IF              reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
+    DO              reduce using rule 23 (do_body_statements -> do_body_statements do_body_statement .)
 

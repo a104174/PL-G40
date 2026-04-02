@@ -36,6 +36,14 @@ def p_statement_if(p):
     'statement : if_stmt'
     p[0] = p[1]
 
+def p_statement_do(p):
+    'statement : do_stmt'
+    p[0] = p[1]
+
+def p_statement_labeled_continue(p):
+    'statement : labeled_continue'
+    p[0] = p[1]
+
 # Declarações
 def p_declaration_integer(p):
     'declaration : INTEGER id_list'
@@ -81,6 +89,35 @@ def p_if_stmt(p):
         p[0] = ('if', p[3], p[6], None)
     else:
         p[0] = ('if', p[3], p[6], p[8])
+
+def p_do_stmt(p):
+    'do_stmt : DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue'
+    if p[2] != p[9][1]:
+        raise SyntaxError(f"Label do DO ({p[2]}) diferente do label do CONTINUE ({p[9][1]})")
+    p[0] = ('do', p[2], p[3], p[5], p[7], p[8])
+
+def p_labeled_continue(p):
+    'labeled_continue : NUMBER CONTINUE'
+    p[0] = ('continue', p[1])
+
+def p_do_body_statements_multiple(p):
+    'do_body_statements : do_body_statements do_body_statement'
+    p[0] = p[1] + [p[2]]
+
+def p_do_body_statements_single(p):
+    'do_body_statements : do_body_statement'
+    p[0] = [p[1]]
+
+def p_do_body_statement(p):
+    '''
+    do_body_statement : declaration
+                      | assignment
+                      | print_stmt
+                      | read_stmt
+                      | if_stmt
+                      | do_stmt
+    '''
+    p[0] = p[1]
 
 # Lista de coisas a imprimir
 def p_print_list_multiple(p):

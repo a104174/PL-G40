@@ -73,6 +73,29 @@ def check_statement(stmt, symbols, errors, reported):
             for inner_stmt in else_statements:
                 check_statement(inner_stmt, symbols, errors, reported)
 
+    elif kind == 'do':
+        _, label, var, start_expr, end_expr, body_statements = stmt
+
+        if var not in symbols:
+            add_error(f"Variável de controlo '{var}' usada sem declaração", errors, reported)
+        elif symbols[var] == 'LOGICAL':
+            add_error(f"Variável de controlo '{var}' do DO deve ser numérica", errors, reported)
+
+        start_type = infer_type(start_expr, symbols, errors, reported)
+        if start_type == 'LOGICAL':
+            add_error("Expressão inicial do DO deve ser numérica", errors, reported)
+
+        end_type = infer_type(end_expr, symbols, errors, reported)
+        if end_type == 'LOGICAL':
+            add_error("Expressão final do DO deve ser numérica", errors, reported)
+
+        for inner_stmt in body_statements:
+            check_statement(inner_stmt, symbols, errors, reported)
+
+    elif kind == 'continue':
+        _, label = stmt
+        return
+
 
 def check_expression(expr, symbols, errors, reported):
     kind = expr[0]
