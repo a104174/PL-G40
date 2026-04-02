@@ -3,8 +3,23 @@ from lexer import tokens
 
 # Programa completo
 def p_program(p):
-    'program : PROGRAM ID statements END'
-    p[0] = ('program', p[2], p[3])
+    'program : PROGRAM ID statements END opt_function_list'
+    p[0] = ('program', p[2], p[3], p[5])
+
+def p_opt_function_list(p):
+    '''
+    opt_function_list : function_list
+                      | empty
+    '''
+    p[0] = p[1]
+
+def p_function_list_multiple(p):
+    'function_list : function_list function_decl'
+    p[0] = p[1] + [p[2]]
+
+def p_function_list_single(p):
+    'function_list : function_decl'
+    p[0] = [p[1]]
 
 # Lista de statements
 def p_statements_multiple(p):
@@ -46,6 +61,10 @@ def p_statement_labeled_continue(p):
 
 def p_statement_goto(p):
     'statement : goto_stmt'
+    p[0] = p[1]
+
+def p_statement_return(p):
+    'statement : return_stmt'
     p[0] = p[1]
 
 # Declarações
@@ -118,6 +137,42 @@ def p_labeled_continue(p):
 def p_goto_stmt(p):
     'goto_stmt : GOTO NUMBER'
     p[0] = ('goto', p[2])
+
+def p_return_stmt(p):
+    'return_stmt : RETURN'
+    p[0] = ('return',)
+
+def p_type_spec_integer(p):
+    'type_spec : INTEGER'
+    p[0] = 'INTEGER'
+
+def p_type_spec_real(p):
+    'type_spec : REAL'
+    p[0] = 'REAL'
+
+def p_type_spec_logical(p):
+    'type_spec : LOGICAL'
+    p[0] = 'LOGICAL'
+
+def p_function_decl(p):
+    'function_decl : type_spec FUNCTION ID LPAREN ID RPAREN function_body END'
+    p[0] = ('function', p[1], p[3], p[5], p[7])
+
+def p_function_body_multiple(p):
+    'function_body : function_body function_body_statement'
+    p[0] = p[1] + [p[2]]
+
+def p_function_body_single(p):
+    'function_body : function_body_statement'
+    p[0] = [p[1]]
+
+def p_function_body_statement(p):
+    '''
+    function_body_statement : declaration
+                            | assignment
+                            | return_stmt
+    '''
+    p[0] = p[1]
 
 def p_read_list_multiple(p):
     'read_list : read_list COMMA read_target'
@@ -257,5 +312,9 @@ def p_error(p):
         print(f"Erro sintático no token {p.type} com valor {p.value}")
     else:
         print("Erro sintático no fim do ficheiro")
+
+def p_empty(p):
+    'empty :'
+    p[0] = []
 
 parser = yacc.yacc()
