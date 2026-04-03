@@ -12,3 +12,5 @@ src/parsetab.py
 .pytest_cache/
 .mypy_cache/
 
+.codex/
+.codex/
