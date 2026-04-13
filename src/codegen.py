@@ -35,19 +35,27 @@ def build_global_layout(statements):
 
         for item in ids:
             item_kind, name, size = get_decl_info(item)
-            if item_kind != 'scalar':
-                continue
-
             if name in layout:
                 continue
 
-            layout[name] = {
-                'scope': 'global',
-                'type': var_type,
-                'offset': offset,
-                'size': 1,
-            }
-            offset += 1
+            if item_kind == 'array':
+                layout[name] = {
+                    'scope': 'global',
+                    'kind': 'array',
+                    'type': var_type,
+                    'offset': offset,
+                    'size': size,
+                }
+                offset += size
+            else:
+                layout[name] = {
+                    'scope': 'global',
+                    'kind': 'scalar',
+                    'type': var_type,
+                    'offset': offset,
+                    'size': 1,
+                }
+                offset += 1
 
     return layout
 
@@ -76,14 +84,20 @@ def statement_supported_ewvm_phase1(stmt, layout):
 
         for item in ids:
             item_kind, _, _ = get_decl_info(item)
-            if item_kind != 'scalar':
+            if item_kind not in ('scalar', 'array'):
                 return False
 
         return True
 
     if kind == 'assign':
         _, target, expr = stmt
-        return isinstance(target, str) and expression_supported_ewvm_phase1(expr, layout)
+        if isinstance(target, str):
+            return is_scalar_global(layout, target) and expression_supported_ewvm_phase1(expr, layout)
+
+        if isinstance(target, tuple) and target[0] == 'array_access':
+            return array_access_supported_ewvm_phase1(target, layout) and expression_supported_ewvm_phase1(expr, layout)
+
+        return False
 
     if kind == 'print':
         _, items = stmt
@@ -94,7 +108,11 @@ def statement_supported_ewvm_phase1(stmt, layout):
 
     if kind == 'read':
         _, ids = stmt
-        return all(isinstance(target, str) for target in ids)
+        return all(
+            (isinstance(target, str) and is_scalar_global(layout, target))
+            or array_access_supported_ewvm_phase1(target, layout)
+            for target in ids
+        )
 
     if kind == 'if':
         _, cond, then_statements, else_statements = stmt
@@ -130,6 +148,9 @@ def statement_supported_ewvm_phase1(stmt, layout):
         if not isinstance(var, str):
             return False
 
+        if not is_scalar_global(layout, var):
+            return False
+
         return all(statement_supported_ewvm_phase1(inner_stmt, layout) for inner_stmt in body_statements)
 
     return False
@@ -139,7 +160,12 @@ def expression_supported_ewvm_phase1(expr, layout):
     kind = expr[0]
 
     if kind in ('number', 'id'):
+        if kind == 'id':
+            return is_scalar_global(layout, expr[1])
         return True
+
+    if kind == 'array_access':
+        return array_access_supported_ewvm_phase1(expr, layout)
 
     if kind == 'binop':
         _, op, left, right = expr
@@ -158,6 +184,21 @@ def expression_supported_ewvm_phase1(expr, layout):
         )
 
     return False
+
+
+def array_access_supported_ewvm_phase1(expr, layout):
+    if not isinstance(expr, tuple) or expr[0] != 'array_access':
+        return False
+
+    _, name, index_expr = expr
+
+    if not is_array_global(layout, name):
+        return False
+
+    if not expression_supported_ewvm_phase1(index_expr, layout):
+        return False
+
+    return infer_expression_type_ewvm_phase1(index_expr, layout) == 'INTEGER'
 
 
 def condition_supported_ewvm_phase1(cond, layout):
@@ -183,6 +224,16 @@ def get_global_info(layout, name):
     return info
 
 
+def is_scalar_global(layout, name):
+    info = layout.get(name)
+    return info is not None and info['kind'] == 'scalar'
+
+
+def is_array_global(layout, name):
+    info = layout.get(name)
+    return info is not None and info['kind'] == 'array'
+
+
 def infer_expression_type_ewvm_phase1(expr, layout):
     kind = expr[0]
 
@@ -191,6 +242,19 @@ def infer_expression_type_ewvm_phase1(expr, layout):
 
     if kind == 'id':
         return get_global_info(layout, expr[1])['type']
+
+    if kind == 'array_access':
+        _, name, index_expr = expr
+        info = get_global_info(layout, name)
+
+        if info['kind'] != 'array':
+            raise NotImplementedError("Acesso indexado EWVM apenas suporta arrays globais")
+
+        index_type = infer_expression_type_ewvm_phase1(index_expr, layout)
+        if index_type != 'INTEGER':
+            raise NotImplementedError("Índice de array EWVM deve ser INTEGER")
+
+        return info['type']
 
     if kind == 'binop':
         _, _, left, right = expr
@@ -216,14 +280,38 @@ def infer_expression_type_ewvm_phase1(expr, layout):
 
 def emit_global_initialization_ewvm_phase1(code, layout):
     for _, info in iter_layout(layout):
-        if info['type'] == 'REAL':
-            code.append("PUSHF 0.0")
+        if info['kind'] == 'array':
+            if info['type'] == 'REAL':
+                for _ in range(info['size']):
+                    code.append("PUSHF 0.0")
+            else:
+                code.append(f"PUSHN {info['size']}")
         else:
-            code.append("PUSHI 0")
+            if info['type'] == 'REAL':
+                code.append("PUSHF 0.0")
+            else:
+                code.append("PUSHI 0")
 
 
 def emit_label_ewvm_phase1(code, label):
     code.append(f"{label}:")
+
+
+def emit_global_address_ewvm_phase1(info, code):
+    code.append("PUSHGP")
+    if info['offset'] != 0:
+        code.append(f"PUSHI {info['offset']}")
+        code.append("PADD")
+
+
+def generate_array_index_ewvm_phase1(index_expr, code, layout):
+    index_type = generate_expression_ewvm_phase1(index_expr, code, layout)
+
+    if index_type != 'INTEGER':
+        raise NotImplementedError("Índice de array EWVM deve ser INTEGER")
+
+    code.append("PUSHI 1")
+    code.append("SUB")
 
 
 def generate_expression_ewvm_phase1(expr, code, layout):
@@ -241,6 +329,18 @@ def generate_expression_ewvm_phase1(expr, code, layout):
     if kind == 'id':
         info = get_global_info(layout, expr[1])
         code.append(f"PUSHG {info['offset']}")
+        return info['type']
+
+    if kind == 'array_access':
+        _, name, index_expr = expr
+        info = get_global_info(layout, name)
+
+        if info['kind'] != 'array':
+            raise NotImplementedError("Acesso indexado EWVM apenas suporta arrays globais")
+
+        emit_global_address_ewvm_phase1(info, code)
+        generate_array_index_ewvm_phase1(index_expr, code, layout)
+        code.append("LOADN")
         return info['type']
 
     if kind == 'binop':
@@ -330,6 +430,23 @@ def generate_statement_ewvm_phase1(stmt, code, layout, label_counter):
 
     if kind == 'assign':
         _, target, expr = stmt
+        if isinstance(target, tuple) and target[0] == 'array_access':
+            _, name, index_expr = target
+            info = get_global_info(layout, name)
+
+            if info['kind'] != 'array':
+                raise NotImplementedError("Atribuição indexada EWVM apenas suporta arrays globais")
+
+            emit_global_address_ewvm_phase1(info, code)
+            generate_array_index_ewvm_phase1(index_expr, code, layout)
+            expr_type = generate_expression_ewvm_phase1(expr, code, layout)
+
+            if info['type'] == 'REAL' and expr_type == 'INTEGER':
+                code.append("ITOF")
+
+            code.append("STOREN")
+            return
+
         info = get_global_info(layout, target)
         expr_type = generate_expression_ewvm_phase1(expr, code, layout)
 
@@ -342,6 +459,20 @@ def generate_statement_ewvm_phase1(stmt, code, layout, label_counter):
     if kind == 'read':
         _, ids = stmt
         for target in ids:
+            if isinstance(target, tuple) and target[0] == 'array_access':
+                _, name, index_expr = target
+                info = get_global_info(layout, name)
+
+                if info['kind'] != 'array':
+                    raise NotImplementedError("READ indexado EWVM apenas suporta arrays globais")
+
+                emit_global_address_ewvm_phase1(info, code)
+                generate_array_index_ewvm_phase1(index_expr, code, layout)
+                code.append("READ")
+                code.append("ATOF" if info['type'] == 'REAL' else "ATOI")
+                code.append("STOREN")
+                continue
+
             info = get_global_info(layout, target)
             code.append("READ")
             code.append("ATOF" if info['type'] == 'REAL' else "ATOI")
