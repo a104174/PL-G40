@@ -95,6 +95,28 @@ def statement_supported_ewvm_phase1(stmt):
         _, ids = stmt
         return all(isinstance(target, str) for target in ids)
 
+    if kind == 'if':
+        _, cond, then_statements, else_statements = stmt
+
+        if not condition_supported_ewvm_phase1(cond):
+            return False
+
+        if not all(statement_supported_ewvm_phase1(inner_stmt) for inner_stmt in then_statements):
+            return False
+
+        if else_statements is not None and not all(
+            statement_supported_ewvm_phase1(inner_stmt) for inner_stmt in else_statements
+        ):
+            return False
+
+        return True
+
+    if kind == 'goto':
+        return True
+
+    if kind == 'continue':
+        return True
+
     return False
 
 
@@ -112,6 +134,16 @@ def expression_supported_ewvm_phase1(expr):
         )
 
     return False
+
+
+def condition_supported_ewvm_phase1(cond):
+    kind = cond[0]
+
+    if kind != 'relop':
+        return False
+
+    _, _, left, right = cond
+    return expression_supported_ewvm_phase1(left) and expression_supported_ewvm_phase1(right)
 
 
 def ewvm_string(value):
@@ -156,6 +188,10 @@ def emit_global_initialization_ewvm_phase1(code, layout):
             code.append("PUSHI 0")
 
 
+def emit_label_ewvm_phase1(code, label):
+    code.append(f"{label}:")
+
+
 def generate_expression_ewvm_phase1(expr, code, layout):
     kind = expr[0]
 
@@ -195,7 +231,51 @@ def generate_expression_ewvm_phase1(expr, code, layout):
     raise NotImplementedError(f"Expressão não suportada na fase EWVM 1: {kind}")
 
 
-def generate_statement_ewvm_phase1(stmt, code, layout):
+def generate_condition_ewvm_phase1(cond, code, layout):
+    kind = cond[0]
+
+    if kind != 'relop':
+        raise NotImplementedError(f"Condição não suportada na fase EWVM 1: {kind}")
+
+    _, op, left, right = cond
+    left_type = infer_expression_type_ewvm_phase1(left, layout)
+    right_type = infer_expression_type_ewvm_phase1(right, layout)
+    comparison_type = 'REAL' if left_type == 'REAL' or right_type == 'REAL' else 'INTEGER'
+
+    generate_expression_ewvm_phase1(left, code, layout)
+    if comparison_type == 'REAL' and left_type == 'INTEGER':
+        code.append("ITOF")
+
+    generate_expression_ewvm_phase1(right, code, layout)
+    if comparison_type == 'REAL' and right_type == 'INTEGER':
+        code.append("ITOF")
+
+    equality_ops = {
+        '.EQ.': ['EQUAL'],
+        '.NE.': ['EQUAL', 'NOT'],
+    }
+    int_ops = {
+        '.LT.': ['INF'],
+        '.LE.': ['INFEQ'],
+        '.GT.': ['SUP'],
+        '.GE.': ['SUPEQ'],
+    }
+    real_ops = {
+        '.LT.': ['FINF'],
+        '.LE.': ['FINFEQ'],
+        '.GT.': ['FSUP'],
+        '.GE.': ['FSUPEQ'],
+    }
+
+    if op in equality_ops:
+        code.extend(equality_ops[op])
+        return
+
+    ops = real_ops if comparison_type == 'REAL' else int_ops
+    code.extend(ops[op])
+
+
+def generate_statement_ewvm_phase1(stmt, code, layout, label_counter):
     kind = stmt[0]
 
     if kind == 'declare':
@@ -235,6 +315,49 @@ def generate_statement_ewvm_phase1(stmt, code, layout):
         code.append("WRITELN")
         return
 
+    if kind == 'if':
+        _, cond, then_statements, else_statements = stmt
+
+        if else_statements is None:
+            end_label = new_label(label_counter)
+
+            generate_condition_ewvm_phase1(cond, code, layout)
+            code.append(f"JZ {end_label}")
+
+            for inner_stmt in then_statements:
+                generate_statement_ewvm_phase1(inner_stmt, code, layout, label_counter)
+
+            emit_label_ewvm_phase1(code, end_label)
+            return
+
+        else_label = new_label(label_counter)
+        end_label = new_label(label_counter)
+
+        generate_condition_ewvm_phase1(cond, code, layout)
+        code.append(f"JZ {else_label}")
+
+        for inner_stmt in then_statements:
+            generate_statement_ewvm_phase1(inner_stmt, code, layout, label_counter)
+
+        code.append(f"JUMP {end_label}")
+        emit_label_ewvm_phase1(code, else_label)
+
+        for inner_stmt in else_statements:
+            generate_statement_ewvm_phase1(inner_stmt, code, layout, label_counter)
+
+        emit_label_ewvm_phase1(code, end_label)
+        return
+
+    if kind == 'goto':
+        _, label = stmt
+        code.append(f"JUMP {user_label(label)}")
+        return
+
+    if kind == 'continue':
+        _, label = stmt
+        emit_label_ewvm_phase1(code, user_label(label))
+        return
+
     raise NotImplementedError(f"Statement não suportado na fase EWVM 1: {kind}")
 
 
@@ -242,12 +365,13 @@ def generate_program_ewvm_phase1(ast):
     _, statements, _ = normalize_program(ast)
     layout = build_global_layout(statements)
     code = []
+    label_counter = [0]
 
     emit_global_initialization_ewvm_phase1(code, layout)
     code.append("START")
 
     for stmt in statements:
-        generate_statement_ewvm_phase1(stmt, code, layout)
+        generate_statement_ewvm_phase1(stmt, code, layout, label_counter)
 
     code.append("STOP")
     return code
