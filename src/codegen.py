@@ -62,10 +62,11 @@ def supports_ewvm_phase1(ast):
     if function_nodes:
         return False
 
-    return all(statement_supported_ewvm_phase1(stmt) for stmt in statements)
+    layout = build_global_layout(statements)
+    return all(statement_supported_ewvm_phase1(stmt, layout) for stmt in statements)
 
 
-def statement_supported_ewvm_phase1(stmt):
+def statement_supported_ewvm_phase1(stmt, layout):
     kind = stmt[0]
 
     if kind == 'declare':
@@ -82,12 +83,12 @@ def statement_supported_ewvm_phase1(stmt):
 
     if kind == 'assign':
         _, target, expr = stmt
-        return isinstance(target, str) and expression_supported_ewvm_phase1(expr)
+        return isinstance(target, str) and expression_supported_ewvm_phase1(expr, layout)
 
     if kind == 'print':
         _, items = stmt
         return all(
-            isinstance(item, tuple) and item[0] == 'string' or expression_supported_ewvm_phase1(item)
+            isinstance(item, tuple) and item[0] == 'string' or expression_supported_ewvm_phase1(item, layout)
             for item in items
         )
 
@@ -98,14 +99,14 @@ def statement_supported_ewvm_phase1(stmt):
     if kind == 'if':
         _, cond, then_statements, else_statements = stmt
 
-        if not condition_supported_ewvm_phase1(cond):
+        if not condition_supported_ewvm_phase1(cond, layout):
             return False
 
-        if not all(statement_supported_ewvm_phase1(inner_stmt) for inner_stmt in then_statements):
+        if not all(statement_supported_ewvm_phase1(inner_stmt, layout) for inner_stmt in then_statements):
             return False
 
         if else_statements is not None and not all(
-            statement_supported_ewvm_phase1(inner_stmt) for inner_stmt in else_statements
+            statement_supported_ewvm_phase1(inner_stmt, layout) for inner_stmt in else_statements
         ):
             return False
 
@@ -120,21 +121,21 @@ def statement_supported_ewvm_phase1(stmt):
     if kind == 'do':
         _, _, var, start_expr, end_expr, body_statements = stmt
 
-        if not expression_supported_ewvm_phase1(start_expr):
+        if not expression_supported_ewvm_phase1(start_expr, layout):
             return False
 
-        if not expression_supported_ewvm_phase1(end_expr):
+        if not expression_supported_ewvm_phase1(end_expr, layout):
             return False
 
         if not isinstance(var, str):
             return False
 
-        return all(statement_supported_ewvm_phase1(inner_stmt) for inner_stmt in body_statements)
+        return all(statement_supported_ewvm_phase1(inner_stmt, layout) for inner_stmt in body_statements)
 
     return False
 
 
-def expression_supported_ewvm_phase1(expr):
+def expression_supported_ewvm_phase1(expr, layout):
     kind = expr[0]
 
     if kind in ('number', 'id'):
@@ -143,21 +144,30 @@ def expression_supported_ewvm_phase1(expr):
     if kind == 'binop':
         _, op, left, right = expr
         return op in ('+', '-', '*', '/') and (
-            expression_supported_ewvm_phase1(left)
-            and expression_supported_ewvm_phase1(right)
+            expression_supported_ewvm_phase1(left, layout)
+            and expression_supported_ewvm_phase1(right, layout)
+        )
+
+    if kind == 'mod':
+        _, left, right = expr
+        return (
+            expression_supported_ewvm_phase1(left, layout)
+            and expression_supported_ewvm_phase1(right, layout)
+            and infer_expression_type_ewvm_phase1(left, layout) == 'INTEGER'
+            and infer_expression_type_ewvm_phase1(right, layout) == 'INTEGER'
         )
 
     return False
 
 
-def condition_supported_ewvm_phase1(cond):
+def condition_supported_ewvm_phase1(cond, layout):
     kind = cond[0]
 
     if kind != 'relop':
         return False
 
     _, _, left, right = cond
-    return expression_supported_ewvm_phase1(left) and expression_supported_ewvm_phase1(right)
+    return expression_supported_ewvm_phase1(left, layout) and expression_supported_ewvm_phase1(right, layout)
 
 
 def ewvm_string(value):
@@ -190,6 +200,16 @@ def infer_expression_type_ewvm_phase1(expr, layout):
         if left_type == 'REAL' or right_type == 'REAL':
             return 'REAL'
         return 'INTEGER'
+
+    if kind == 'mod':
+        _, left, right = expr
+        left_type = infer_expression_type_ewvm_phase1(left, layout)
+        right_type = infer_expression_type_ewvm_phase1(right, layout)
+
+        if left_type == 'INTEGER' and right_type == 'INTEGER':
+            return 'INTEGER'
+
+        raise NotImplementedError("MOD na EWVM só é suportado com operandos INTEGER")
 
     raise NotImplementedError(f"Expressão não suportada na fase EWVM 1: {kind}")
 
@@ -241,6 +261,19 @@ def generate_expression_ewvm_phase1(expr, code, layout):
         real_ops = {'+': 'FADD', '-': 'FSUB', '*': 'FMUL', '/': 'FDIV'}
         code.append(real_ops[op] if result_type == 'REAL' else int_ops[op])
         return result_type
+
+    if kind == 'mod':
+        _, left, right = expr
+        left_type = infer_expression_type_ewvm_phase1(left, layout)
+        right_type = infer_expression_type_ewvm_phase1(right, layout)
+
+        if left_type != 'INTEGER' or right_type != 'INTEGER':
+            raise NotImplementedError("MOD na EWVM só é suportado com operandos INTEGER")
+
+        generate_expression_ewvm_phase1(left, code, layout)
+        generate_expression_ewvm_phase1(right, code, layout)
+        code.append("MOD")
+        return 'INTEGER'
 
     raise NotImplementedError(f"Expressão não suportada na fase EWVM 1: {kind}")
 
