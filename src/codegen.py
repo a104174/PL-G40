@@ -117,6 +117,20 @@ def statement_supported_ewvm_phase1(stmt):
     if kind == 'continue':
         return True
 
+    if kind == 'do':
+        _, _, var, start_expr, end_expr, body_statements = stmt
+
+        if not expression_supported_ewvm_phase1(start_expr):
+            return False
+
+        if not expression_supported_ewvm_phase1(end_expr):
+            return False
+
+        if not isinstance(var, str):
+            return False
+
+        return all(statement_supported_ewvm_phase1(inner_stmt) for inner_stmt in body_statements)
+
     return False
 
 
@@ -356,6 +370,40 @@ def generate_statement_ewvm_phase1(stmt, code, layout, label_counter):
     if kind == 'continue':
         _, label = stmt
         emit_label_ewvm_phase1(code, user_label(label))
+        return
+
+    if kind == 'do':
+        _, label, var, start_expr, end_expr, body_statements = stmt
+        start_label = new_label(label_counter)
+        end_label = user_label(label)
+        control_info = get_global_info(layout, var)
+
+        start_type = generate_expression_ewvm_phase1(start_expr, code, layout)
+        if control_info['type'] == 'REAL' and start_type == 'INTEGER':
+            code.append("ITOF")
+        code.append(f"STOREG {control_info['offset']}")
+
+        emit_label_ewvm_phase1(code, start_label)
+        generate_condition_ewvm_phase1(
+            ('relop', '.LE.', ('id', var), end_expr),
+            code,
+            layout,
+        )
+        code.append(f"JZ {end_label}")
+
+        for inner_stmt in body_statements:
+            generate_statement_ewvm_phase1(inner_stmt, code, layout, label_counter)
+
+        code.append(f"PUSHG {control_info['offset']}")
+        if control_info['type'] == 'REAL':
+            code.append("PUSHF 1.0")
+            code.append("FADD")
+        else:
+            code.append("PUSHI 1")
+            code.append("ADD")
+        code.append(f"STOREG {control_info['offset']}")
+        code.append(f"JUMP {start_label}")
+        emit_label_ewvm_phase1(code, end_label)
         return
 
     raise NotImplementedError(f"Statement não suportado na fase EWVM 1: {kind}")
