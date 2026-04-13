@@ -1,8 +1,13 @@
+import unittest
+
+from src.codegen import generate_program
 from src.parser import parser
 from src.semantic import check_program
-from src.codegen import generate_program
 
-code = """
+
+class IfValidTest(unittest.TestCase):
+    def test_logical_if_falls_back_to_legacy(self):
+        code = """
 PROGRAM TEST
 INTEGER N
 LOGICAL OK
@@ -14,21 +19,27 @@ ENDIF
 END
 """
 
-ast = parser.parse(code)
-print("AST:")
-print(ast)
+        ast = parser.parse(code)
+        symbols, errors = check_program(ast)
 
-symbols, errors = check_program(ast)
-
-print("\nTabela de símbolos:")
-print(symbols)
-
-print("\nErros:")
-for e in errors:
-    print("-", e)
-
-if not errors:
-    print("\nCódigo gerado:")
-    vm_code = generate_program(ast)
-    for instr in vm_code:
-        print(instr)
+        self.assertEqual(errors, [])
+        self.assertEqual(
+            generate_program(ast),
+            [
+                "DECL N",
+                "DECL OK",
+                "PUSH 2",
+                "STORE N",
+                "PUSH 1",
+                "STORE OK",
+                "LOAD OK",
+                "LOAD N",
+                "PUSH 0",
+                "CMPGT",
+                "AND",
+                "JZ L0",
+                'PRINTSTR "VALIDO"',
+                "LABEL L0",
+                "HALT",
+            ],
+        )

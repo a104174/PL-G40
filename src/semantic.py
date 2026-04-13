@@ -55,58 +55,78 @@ def collect_functions(function_nodes, errors, reported):
     functions = {}
 
     for function_node in function_nodes:
-        _, return_type, name, param_name, body_statements = function_node
+        kind = function_node[0]
+
+        if kind == 'function':
+            _, return_type, name, param_names, body_statements = function_node
+        elif kind == 'subroutine':
+            _, name, param_names, body_statements = function_node
+            return_type = None
+        else:
+            continue
 
         if name in functions:
-            add_error(f"Função '{name}' declarada mais do que uma vez", errors, reported)
+            add_error(f"Subprograma '{name}' declarado mais do que uma vez", errors, reported)
             continue
 
         functions[name] = {
+            'kind': kind,
             'return_type': return_type,
-            'param_name': param_name,
-            'param_type': None,
+            'param_names': param_names,
+            'param_types': [None] * len(param_names),
             'body': body_statements,
         }
 
     return functions
 
 
-def find_parameter_type(function_name, param_name, body_statements, errors, reported):
-    param_type = None
+def find_parameter_types(function_name, param_names, body_statements, errors, reported):
+    param_types = {param_name: None for param_name in param_names}
 
     for stmt in body_statements:
+        if stmt[0] == 'label':
+            stmt = stmt[2]
+
         if stmt[0] != 'declare':
             continue
 
         _, var_type, items = stmt
         for item in items:
             name, info = get_decl_info(item, var_type)
-            if name != param_name:
+            if name not in param_types:
                 continue
 
             if info['kind'] != 'scalar':
                 add_error(
-                    f"Parâmetro '{param_name}' da função '{function_name}' deve ser escalar",
+                    f"Parâmetro '{name}' da função '{function_name}' deve ser escalar",
                     errors,
                     reported
                 )
-                return None
+                param_types[name] = None
+                continue
 
-            if param_type is None:
-                param_type = info['type']
+            if param_types[name] is None:
+                param_types[name] = info['type']
 
-    if param_type is None:
-        add_error(
-            f"Parâmetro '{param_name}' da função '{function_name}' deve ser declarado",
-            errors,
-            reported
-        )
+    for param_name in param_names:
+        if param_types[param_name] is None:
+            add_error(
+                f"Parâmetro '{param_name}' da função '{function_name}' deve ser declarado",
+                errors,
+                reported
+            )
 
-    return param_type
+    return [param_types[param_name] for param_name in param_names]
 
 
 def check_function(function_node, functions, errors, reported):
-    _, return_type, name, param_name, body_statements = function_node
+    kind = function_node[0]
+
+    if kind == 'function':
+        _, return_type, name, param_names, body_statements = function_node
+    else:
+        _, name, param_names, body_statements = function_node
+        return_type = None
 
     if name not in functions:
         return
@@ -114,22 +134,35 @@ def check_function(function_node, functions, errors, reported):
     if functions[name]['body'] is not body_statements:
         return
 
-    if param_name == name:
-        add_error(
-            f"Parâmetro '{param_name}' da função '{name}' não pode ter o mesmo nome da função",
-            errors,
-            reported
-        )
+    seen_params = set()
+    for param_name in param_names:
+        if param_name == name:
+            add_error(
+                f"Parâmetro '{param_name}' da função '{name}' não pode ter o mesmo nome da função",
+                errors,
+                reported
+            )
 
-    param_type = find_parameter_type(name, param_name, body_statements, errors, reported)
-    functions[name]['param_type'] = param_type
+        if param_name in seen_params:
+            add_error(
+                f"Parâmetro '{param_name}' da função '{name}' declarado mais do que uma vez",
+                errors,
+                reported
+            )
+            continue
 
-    local_symbols = {
-        name: {'kind': 'scalar', 'type': return_type}
-    }
+        seen_params.add(param_name)
+
+    param_types = find_parameter_types(name, param_names, body_statements, errors, reported)
+    functions[name]['param_types'] = param_types
+
+    local_symbols = {}
+    if kind == 'function':
+        local_symbols[name] = {'kind': 'scalar', 'type': return_type}
+    local_labels = collect_labels(body_statements)
 
     for stmt in body_statements:
-        check_statement(stmt, local_symbols, functions, errors, reported, set(), name)
+        check_statement(stmt, local_symbols, functions, errors, reported, local_labels, name)
 
 
 def collect_labels(statements, labels=None):
@@ -139,8 +172,9 @@ def collect_labels(statements, labels=None):
     for stmt in statements:
         kind = stmt[0]
 
-        if kind == 'continue':
+        if kind == 'label':
             labels.add(stmt[1])
+            collect_labels([stmt[2]], labels)
 
         elif kind == 'do':
             labels.add(stmt[1])
@@ -154,25 +188,78 @@ def collect_labels(statements, labels=None):
     return labels
 
 
-def check_call(name, arg_expr, symbols, functions, errors, reported):
+def check_call(name, arg_exprs, symbols, functions, errors, reported):
     function_info = functions.get(name)
 
     if function_info is None:
         add_error(f"Função '{name}' usada sem declaração", errors, reported)
-        infer_type(arg_expr, symbols, functions, errors, reported)
+        for arg_expr in arg_exprs:
+            infer_type(arg_expr, symbols, functions, errors, reported)
         return None
 
-    arg_type = infer_type(arg_expr, symbols, functions, errors, reported)
-    param_type = function_info.get('param_type')
+    if function_info.get('kind') != 'function':
+        add_error(f"Subrotina '{name}' não pode ser usada numa expressão", errors, reported)
+        for arg_expr in arg_exprs:
+            infer_type(arg_expr, symbols, functions, errors, reported)
+        return None
 
-    if param_type is not None and arg_type is not None and not compatible_types(param_type, arg_type):
+    param_names = function_info.get('param_names', [])
+    param_types = function_info.get('param_types', [])
+
+    if len(arg_exprs) != len(param_names):
         add_error(
-            f"Incompatibilidade de tipos na chamada a '{name}': {param_type} <- {arg_type}",
+            f"Função '{name}' chamada com {len(arg_exprs)} argumentos, esperado {len(param_names)}",
             errors,
             reported
         )
 
+    arg_types = [infer_type(arg_expr, symbols, functions, errors, reported) for arg_expr in arg_exprs]
+
+    for param_type, arg_type in zip(param_types, arg_types):
+        if param_type is not None and arg_type is not None and not compatible_types(param_type, arg_type):
+            add_error(
+                f"Incompatibilidade de tipos na chamada a '{name}': {param_type} <- {arg_type}",
+                errors,
+                reported
+            )
+
     return function_info['return_type']
+
+
+def check_subroutine_call(name, arg_exprs, symbols, functions, errors, reported):
+    function_info = functions.get(name)
+
+    if function_info is None:
+        add_error(f"Subrotina '{name}' usada sem declaração", errors, reported)
+        for arg_expr in arg_exprs:
+            infer_type(arg_expr, symbols, functions, errors, reported)
+        return
+
+    if function_info.get('kind') != 'subroutine':
+        add_error(f"Função '{name}' não pode ser usada com CALL", errors, reported)
+        for arg_expr in arg_exprs:
+            infer_type(arg_expr, symbols, functions, errors, reported)
+        return
+
+    param_names = function_info.get('param_names', [])
+    param_types = function_info.get('param_types', [])
+
+    if len(arg_exprs) != len(param_names):
+        add_error(
+            f"Subrotina '{name}' chamada com {len(arg_exprs)} argumentos, esperado {len(param_names)}",
+            errors,
+            reported
+        )
+
+    arg_types = [infer_type(arg_expr, symbols, functions, errors, reported) for arg_expr in arg_exprs]
+
+    for param_type, arg_type in zip(param_types, arg_types):
+        if param_type is not None and arg_type is not None and not compatible_types(param_type, arg_type):
+            add_error(
+                f"Incompatibilidade de tipos na chamada a '{name}': {param_type} <- {arg_type}",
+                errors,
+                reported
+            )
 
 
 def check_array_access(expr, symbols, functions, errors, reported):
@@ -190,30 +277,43 @@ def check_array_access(expr, symbols, functions, errors, reported):
         return None
 
     index_type = infer_type(index_expr, symbols, functions, errors, reported)
-    if index_type == 'LOGICAL':
-        add_error(f"Índice do array '{name}' deve ser numérico", errors, reported)
+    if index_type is not None and index_type != 'INTEGER':
+        add_error(f"Índice do array '{name}' deve ser INTEGER", errors, reported)
 
     return info['type']
 
 
 def infer_indexed_type(expr, symbols, functions, errors, reported):
-    _, name, index_expr = expr
+    _, name, arg_exprs = expr
 
     if name in functions:
-        return check_call(name, index_expr, symbols, functions, errors, reported)
+        return check_call(name, arg_exprs, symbols, functions, errors, reported)
+
+    if len(arg_exprs) != 1:
+        if get_symbol_info(name, symbols) is None:
+            add_error(f"Função '{name}' usada sem declaração", errors, reported)
+        else:
+            add_error(f"Identificador '{name}' não é uma função com {len(arg_exprs)} argumentos", errors, reported)
+
+        for arg_expr in arg_exprs:
+            infer_type(arg_expr, symbols, functions, errors, reported)
+        return None
 
     if get_symbol_info(name, symbols) is None:
         add_error(f"Função '{name}' usada sem declaração", errors, reported)
-        infer_type(index_expr, symbols, functions, errors, reported)
+        infer_type(arg_exprs[0], symbols, functions, errors, reported)
         return None
 
-    return check_array_access(expr, symbols, functions, errors, reported)
+    return check_array_access(('array_access', name, arg_exprs[0]), symbols, functions, errors, reported)
 
 
 def check_statement(stmt, symbols, functions, errors, reported, labels, in_function):
     kind = stmt[0]
 
-    if kind == 'declare':
+    if kind == 'label':
+        check_statement(stmt[2], symbols, functions, errors, reported, labels, in_function)
+
+    elif kind == 'declare':
         _, var_type, ids = stmt
         for item in ids:
             name, info = get_decl_info(item, var_type)
@@ -279,6 +379,10 @@ def check_statement(stmt, symbols, functions, errors, reported, labels, in_funct
                 elif info['kind'] != 'scalar':
                     add_error(f"Array '{target}' usado sem índice no READ", errors, reported)
 
+    elif kind == 'call':
+        _, name, arg_exprs = stmt
+        check_subroutine_call(name, arg_exprs, symbols, functions, errors, reported)
+
     elif kind == 'if':
         _, cond, then_statements, else_statements = stmt
 
@@ -336,7 +440,7 @@ def check_expression(expr, symbols, functions, errors, reported):
     if kind == 'id':
         infer_type(expr, symbols, functions, errors, reported)
 
-    elif kind == 'array_access':
+    elif kind == 'indexed':
         infer_indexed_type(expr, symbols, functions, errors, reported)
 
     elif kind == 'binop':
@@ -377,7 +481,7 @@ def infer_type(expr, symbols, functions, errors, reported):
 
         return info['type']
 
-    if kind == 'array_access':
+    if kind == 'indexed':
         return infer_indexed_type(expr, symbols, functions, errors, reported)
 
     if kind == 'binop':
@@ -428,7 +532,7 @@ def infer_type(expr, symbols, functions, errors, reported):
 def infer_condition_type(cond, symbols, functions, errors, reported):
     kind = cond[0]
 
-    if kind in ('number', 'bool', 'id', 'array_access', 'binop'):
+    if kind in ('number', 'bool', 'id', 'indexed', 'binop'):
         return infer_type(cond, symbols, functions, errors, reported)
 
     if kind == 'relop':

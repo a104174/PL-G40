@@ -93,6 +93,9 @@ def supports_ewvm_phase1(ast):
 def statement_supported_ewvm_phase1(stmt, layout, functions):
     kind = stmt[0]
 
+    if kind == 'label':
+        return statement_supported_ewvm_phase1(stmt[2], layout, functions)
+
     if kind == 'declare':
         _, var_type, ids = stmt
         if var_type not in SUPPORTED_EWVM_PHASE1_TYPES:
@@ -149,6 +152,9 @@ def statement_supported_ewvm_phase1(stmt, layout, functions):
     if kind == 'goto':
         return True
 
+    if kind == 'call':
+        return False
+
     if kind == 'continue':
         return True
 
@@ -183,7 +189,7 @@ def expression_supported_ewvm_phase1(expr, layout, functions):
             return is_scalar_symbol(layout, expr[1])
         return True
 
-    if kind == 'array_access':
+    if kind == 'indexed':
         if function_call_supported_ewvm_phase1(expr, layout, functions):
             return True
         return array_access_supported_ewvm_phase1(expr, layout, functions)
@@ -208,10 +214,16 @@ def expression_supported_ewvm_phase1(expr, layout, functions):
 
 
 def array_access_supported_ewvm_phase1(expr, layout, functions):
-    if not isinstance(expr, tuple) or expr[0] != 'array_access':
+    if not isinstance(expr, tuple) or expr[0] not in ('array_access', 'indexed'):
         return False
 
-    _, name, index_expr = expr
+    if expr[0] == 'array_access':
+        _, name, index_expr = expr
+    else:
+        _, name, args = expr
+        if len(args) != 1:
+            return False
+        index_expr = args[0]
 
     if not is_array_symbol(layout, name):
         return False
@@ -223,15 +235,19 @@ def array_access_supported_ewvm_phase1(expr, layout, functions):
 
 
 def function_call_supported_ewvm_phase1(expr, layout, functions):
-    if not isinstance(expr, tuple) or expr[0] != 'array_access':
+    if not isinstance(expr, tuple) or expr[0] != 'indexed':
         return False
 
-    _, name, arg_expr = expr
+    _, name, arg_exprs = expr
     function_info = functions.get(name)
 
     if function_info is None:
         return False
 
+    if len(arg_exprs) != 1:
+        return False
+
+    arg_expr = arg_exprs[0]
     if not expression_supported_ewvm_phase1(arg_expr, layout, functions):
         return False
 
@@ -286,11 +302,18 @@ def collect_functions_ewvm(function_nodes):
     functions = {}
 
     for function_node in function_nodes:
-        _, return_type, name, param_name, body_statements = function_node
+        if function_node[0] != 'function':
+            return None
+
+        _, return_type, name, param_names, body_statements = function_node
 
         if return_type not in SUPPORTED_EWVM_PHASE1_TYPES:
             return None
 
+        if len(param_names) != 1:
+            return None
+
+        param_name = param_names[0]
         local_layout = {
             name: {
                 'kind': 'scalar',
@@ -367,8 +390,12 @@ def infer_expression_type_ewvm_phase1(expr, layout, functions=None):
     if kind == 'id':
         return get_global_info(layout, expr[1])['type']
 
-    if kind == 'array_access':
-        _, name, index_expr = expr
+    if kind == 'indexed':
+        _, name, arg_exprs = expr
+        if len(arg_exprs) != 1:
+            raise NotImplementedError("Chamadas/indexações EWVM só suportam um argumento na fase 1")
+
+        index_expr = arg_exprs[0]
         if name in functions:
             function_info = functions[name]
             arg_type = infer_expression_type_ewvm_phase1(index_expr, layout, functions)
@@ -473,6 +500,18 @@ def emit_slot_initialization_ewvm_phase1(info, code):
         code.append("PUSHI 0")
 
 
+def has_explicit_return(statements):
+    for stmt in statements:
+        kind = stmt[0]
+        if kind == 'return':
+            return True
+
+        if kind == 'label' and has_explicit_return([stmt[2]]):
+            return True
+
+    return False
+
+
 def generate_expression_ewvm_phase1(expr, code, layout, functions):
     kind = expr[0]
 
@@ -490,8 +529,12 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
         emit_scalar_load_ewvm_phase1(info, code)
         return info['type']
 
-    if kind == 'array_access':
-        _, name, index_expr = expr
+    if kind == 'indexed':
+        _, name, arg_exprs = expr
+        if len(arg_exprs) != 1:
+            raise NotImplementedError("Chamadas/indexações EWVM só suportam um argumento na fase 1")
+
+        index_expr = arg_exprs[0]
         if name in functions:
             function_info = functions[name]
             arg_type = infer_expression_type_ewvm_phase1(index_expr, layout, functions)
@@ -702,9 +745,13 @@ def generate_statement_ewvm_phase1(stmt, code, layout, functions, label_counter,
         code.append(f"JUMP {user_label(label)}")
         return
 
-    if kind == 'continue':
-        _, label = stmt
+    if kind == 'label':
+        _, label, inner_stmt = stmt
         emit_label_ewvm_phase1(code, user_label(label))
+        generate_statement_ewvm_phase1(inner_stmt, code, layout, functions, label_counter, current_function)
+        return
+
+    if kind == 'continue':
         return
 
     if kind == 'do':
@@ -753,7 +800,7 @@ def generate_statement_ewvm_phase1(stmt, code, layout, functions, label_counter,
 
 
 def generate_function_ewvm_phase1(function_node, function_info, code, functions, label_counter):
-    _, _, name, param_name, body_statements = function_node
+    _, _, name, _, body_statements = function_node
 
     emit_label_ewvm_phase1(code, function_info['label'])
 
@@ -771,7 +818,7 @@ def generate_function_ewvm_phase1(function_node, function_info, code, functions,
             current_function=name,
         )
 
-    if not any(stmt[0] == 'return' for stmt in body_statements):
+    if not has_explicit_return(body_statements):
         emit_scalar_load_ewvm_phase1(function_info['layout'][name], code)
         code.append("STOREL -1")
         code.append("RETURN")
@@ -831,10 +878,20 @@ def collect_functions(function_nodes):
     functions = {}
 
     for function_node in function_nodes:
-        _, return_type, name, param_name, body_statements = function_node
+        kind = function_node[0]
+
+        if kind == 'function':
+            _, return_type, name, param_names, body_statements = function_node
+        elif kind == 'subroutine':
+            _, name, param_names, body_statements = function_node
+            return_type = None
+        else:
+            continue
+
         functions[name] = {
+            'kind': kind,
             'return_type': return_type,
-            'param_name': param_name,
+            'param_names': param_names,
             'body': body_statements,
         }
 
@@ -852,26 +909,41 @@ def get_decl_info(item):
 
 
 def generate_function_legacy(function_node, code, label_counter, functions):
-    _, return_type, name, param_name, body_statements = function_node
+    kind = function_node[0]
 
-    code.append(f"FUNC {name}")
-    code.append(f"PARAM {param_name}")
-    code.append(f"DECL {name}")
+    if kind == 'function':
+        _, return_type, name, param_names, body_statements = function_node
+        code.append(f"FUNC {name}")
+    else:
+        _, name, param_names, body_statements = function_node
+        code.append(f"SUBROUTINE {name}")
+
+    for param_name in param_names:
+        code.append(f"PARAM {param_name}")
+
+    if kind == 'function':
+        code.append(f"DECL {name}")
 
     for stmt in body_statements:
         generate_statement_legacy(stmt, code, label_counter, functions, name)
 
-    if not any(stmt[0] == 'return' for stmt in body_statements):
-        code.append(f"LOAD {name}")
+    if not has_explicit_return(body_statements):
+        if kind == 'function':
+            code.append(f"LOAD {name}")
         code.append("RET")
 
-    code.append("ENDFUNC")
+    code.append("ENDFUNC" if kind == 'function' else "ENDSUBROUTINE")
 
 
 def generate_statement_legacy(stmt, code, label_counter, functions, current_function):
     kind = stmt[0]
 
-    if kind == 'declare':
+    if kind == 'label':
+        _, label, inner_stmt = stmt
+        code.append(f"LABEL {user_label(label)}")
+        generate_statement_legacy(inner_stmt, code, label_counter, functions, current_function)
+
+    elif kind == 'declare':
         _, var_type, ids = stmt
         for item in ids:
             item_kind, name, size = get_decl_info(item)
@@ -968,15 +1040,21 @@ def generate_statement_legacy(stmt, code, label_counter, functions, current_func
         code.append(f"LABEL {end_label}")
 
     elif kind == 'continue':
-        _, label = stmt
-        code.append(f"LABEL {user_label(label)}")
+        return
 
     elif kind == 'goto':
         _, label = stmt
         code.append(f"JMP {user_label(label)}")
 
+    elif kind == 'call':
+        _, name, arg_exprs = stmt
+        for arg_expr in arg_exprs:
+            generate_expression_legacy(arg_expr, code, functions)
+        code.append(f"CALL {name}")
+
     elif kind == 'return':
-        code.append(f"LOAD {current_function}")
+        if functions[current_function]['kind'] == 'function':
+            code.append(f"LOAD {current_function}")
         code.append("RET")
 
 
@@ -993,13 +1071,20 @@ def generate_expression_legacy(expr, code, functions):
     elif kind == 'id':
         code.append(f"LOAD {expr[1]}")
 
-    elif kind == 'array_access':
-        _, name, index_expr = expr
-        generate_expression_legacy(index_expr, code, functions)
+    elif kind == 'indexed':
+        _, name, args = expr
 
         if name in functions:
+            if functions[name]['kind'] != 'function':
+                raise NotImplementedError("Subrotina não pode ser usada como expressão")
+            for arg_expr in args:
+                generate_expression_legacy(arg_expr, code, functions)
             code.append(f"CALL {name}")
         else:
+            if len(args) != 1:
+                raise NotImplementedError("Arrays legacy só suportam um índice")
+
+            generate_expression_legacy(args[0], code, functions)
             code.append(f"LOADARR {name}")
 
     elif kind == 'binop':
@@ -1026,7 +1111,7 @@ def generate_expression_legacy(expr, code, functions):
 def generate_condition_legacy(cond, code, functions):
     kind = cond[0]
 
-    if kind in ('number', 'bool', 'id', 'array_access', 'binop'):
+    if kind in ('number', 'bool', 'id', 'indexed', 'binop'):
         generate_expression_legacy(cond, code, functions)
 
     elif kind == 'relop':

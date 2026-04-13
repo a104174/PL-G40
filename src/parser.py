@@ -6,23 +6,30 @@ from .lexer import tokens
 
 # Programa completo
 def p_program(p):
-    'program : PROGRAM ID statements END opt_function_list'
+    'program : PROGRAM ID statements END opt_subprogram_list'
     p[0] = ('program', p[2], p[3], p[5])
 
-def p_opt_function_list(p):
+def p_opt_subprogram_list(p):
     '''
-    opt_function_list : function_list
-                      | empty
+    opt_subprogram_list : subprogram_list
+                        | empty
     '''
     p[0] = p[1]
 
-def p_function_list_multiple(p):
-    'function_list : function_list function_decl'
+def p_subprogram_list_multiple(p):
+    'subprogram_list : subprogram_list subprogram_decl'
     p[0] = p[1] + [p[2]]
 
-def p_function_list_single(p):
-    'function_list : function_decl'
+def p_subprogram_list_single(p):
+    'subprogram_list : subprogram_decl'
     p[0] = [p[1]]
+
+def p_subprogram_decl(p):
+    '''
+    subprogram_decl : function_decl
+                    | subroutine_decl
+    '''
+    p[0] = p[1]
 
 # Lista de statements
 def p_statements_multiple(p):
@@ -33,41 +40,41 @@ def p_statements_single(p):
     'statements : statement'
     p[0] = [p[1]]
 
-# Tipos de statement
-def p_statement_decl(p):
-    'statement : declaration'
+def p_statement_unlabeled(p):
+    'statement : statement_core'
     p[0] = p[1]
 
-def p_statement_assign(p):
-    'statement : assignment'
+def p_statement_labeled(p):
+    'statement : NUMBER labeled_statement_core'
+    p[0] = ('label', p[1], p[2])
+
+def p_statement_core(p):
+    '''
+    statement_core : declaration
+                   | assignment
+                   | print_stmt
+                   | read_stmt
+                   | if_stmt
+                   | do_stmt
+                   | goto_stmt
+                   | call_stmt
+                   | return_stmt
+                   | continue_stmt
+    '''
     p[0] = p[1]
 
-def p_statement_print(p):
-    'statement : print_stmt'
-    p[0] = p[1]
-
-def p_statement_read(p):
-    'statement : read_stmt'
-    p[0] = p[1]
-
-def p_statement_if(p):
-    'statement : if_stmt'
-    p[0] = p[1]
-
-def p_statement_do(p):
-    'statement : do_stmt'
-    p[0] = p[1]
-
-def p_statement_labeled_continue(p):
-    'statement : labeled_continue'
-    p[0] = p[1]
-
-def p_statement_goto(p):
-    'statement : goto_stmt'
-    p[0] = p[1]
-
-def p_statement_return(p):
-    'statement : return_stmt'
+def p_labeled_statement_core(p):
+    '''
+    labeled_statement_core : assignment
+                           | print_stmt
+                           | read_stmt
+                           | if_stmt
+                           | do_stmt
+                           | goto_stmt
+                           | call_stmt
+                           | return_stmt
+                           | continue_stmt
+    '''
     p[0] = p[1]
 
 # Declarações
@@ -134,16 +141,24 @@ def p_do_stmt(p):
     p[0] = ('do', p[2], p[3], p[5], p[7], p[8])
 
 def p_labeled_continue(p):
-    'labeled_continue : NUMBER CONTINUE'
-    p[0] = ('continue', p[1])
+    'labeled_continue : NUMBER continue_stmt'
+    p[0] = ('continue_label', p[1])
 
 def p_goto_stmt(p):
     'goto_stmt : GOTO NUMBER'
     p[0] = ('goto', p[2])
 
+def p_call_stmt(p):
+    'call_stmt : CALL ID LPAREN opt_argument_list RPAREN'
+    p[0] = ('call', p[2], p[4])
+
 def p_return_stmt(p):
     'return_stmt : RETURN'
     p[0] = ('return',)
+
+def p_continue_stmt(p):
+    'continue_stmt : CONTINUE'
+    p[0] = ('continue',)
 
 def p_type_spec_integer(p):
     'type_spec : INTEGER'
@@ -158,24 +173,35 @@ def p_type_spec_logical(p):
     p[0] = 'LOGICAL'
 
 def p_function_decl(p):
-    'function_decl : type_spec FUNCTION ID LPAREN ID RPAREN function_body END'
+    'function_decl : type_spec FUNCTION ID LPAREN opt_param_list RPAREN function_body END'
     p[0] = ('function', p[1], p[3], p[5], p[7])
 
+def p_subroutine_decl(p):
+    'subroutine_decl : SUBROUTINE ID LPAREN opt_param_list RPAREN function_body END'
+    p[0] = ('subroutine', p[2], p[4], p[6])
+
+def p_opt_param_list(p):
+    '''
+    opt_param_list : param_list
+                   | empty
+    '''
+    p[0] = p[1]
+
+def p_param_list_multiple(p):
+    'param_list : param_list COMMA ID'
+    p[0] = p[1] + [p[3]]
+
+def p_param_list_single(p):
+    'param_list : ID'
+    p[0] = [p[1]]
+
 def p_function_body_multiple(p):
-    'function_body : function_body function_body_statement'
+    'function_body : function_body statement'
     p[0] = p[1] + [p[2]]
 
 def p_function_body_single(p):
-    'function_body : function_body_statement'
+    'function_body : statement'
     p[0] = [p[1]]
-
-def p_function_body_statement(p):
-    '''
-    function_body_statement : declaration
-                            | assignment
-                            | return_stmt
-    '''
-    p[0] = p[1]
 
 def p_read_list_multiple(p):
     'read_list : read_list COMMA read_target'
@@ -203,13 +229,24 @@ def p_do_body_statements_single(p):
 
 def p_do_body_statement(p):
     '''
-    do_body_statement : declaration
-                      | assignment
-                      | print_stmt
-                      | read_stmt
-                      | if_stmt
-                      | do_stmt
-                      | goto_stmt
+    do_body_statement : statement_core
+                      | NUMBER do_labeled_statement_core
+    '''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = ('label', p[1], p[2])
+
+def p_do_labeled_statement_core(p):
+    '''
+    do_labeled_statement_core : assignment
+                              | print_stmt
+                              | read_stmt
+                              | if_stmt
+                              | do_stmt
+                              | goto_stmt
+                              | call_stmt
+                              | return_stmt
     '''
     p[0] = p[1]
 
@@ -256,16 +293,30 @@ def p_expression_id(p):
     'expression : ID'
     p[0] = ('id', p[1])
 
-def p_expression_array_access(p):
-    'expression : array_access'
+def p_expression_indexed(p):
+    'expression : ID LPAREN opt_argument_list RPAREN'
+    if p[1] == 'MOD':
+        if len(p[3]) != 2:
+            raise SyntaxError("MOD requer exatamente dois argumentos")
+
+        p[0] = ('mod', p[3][0], p[3][1])
+    else:
+        p[0] = ('indexed', p[1], p[3])
+
+def p_opt_argument_list(p):
+    '''
+    opt_argument_list : argument_list
+                      | empty
+    '''
     p[0] = p[1]
 
-def p_expression_mod(p):
-    'expression : ID LPAREN expression COMMA expression RPAREN'
-    if p[1] == 'MOD':
-        p[0] = ('mod', p[3], p[5])
-    else:
-        raise SyntaxError(f"Chamada inválida a '{p[1]}': apenas MOD suporta dois argumentos")
+def p_argument_list_multiple(p):
+    'argument_list : argument_list COMMA expression'
+    p[0] = p[1] + [p[3]]
+
+def p_argument_list_single(p):
+    'argument_list : expression'
+    p[0] = [p[1]]
 
 def p_expression_true(p):
     'expression : DOT_TRUE'

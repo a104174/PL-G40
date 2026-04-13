@@ -1,8 +1,12 @@
+import unittest
+
 from src.parser import parser
 from src.semantic import check_program
-from src.codegen import generate_program
 
-code = """
+
+class GotoInvalidTest(unittest.TestCase):
+    def test_goto_missing_label(self):
+        code = """
 PROGRAM TEST
 INTEGER N
 N = 0
@@ -11,21 +15,8 @@ PRINT *, N
 END
 """
 
-ast = parser.parse(code)
-print("AST:")
-print(ast)
+        ast = parser.parse(code)
+        symbols, errors = check_program(ast)
 
-symbols, errors = check_program(ast)
-
-print("\nTabela de símbolos:")
-print(symbols)
-
-print("\nErros:")
-for e in errors:
-    print("-", e)
-
-if not errors:
-    print("\nCódigo gerado:")
-    vm_code = generate_program(ast)
-    for instr in vm_code:
-        print(instr)
+        self.assertEqual(symbols, {'N': {'kind': 'scalar', 'type': 'INTEGER'}})
+        self.assertEqual(errors, ["Label '99' usado em GOTO não existe"])

@@ -1,8 +1,12 @@
+import unittest
+
 from src.parser import parser
 from src.semantic import check_program
-from src.codegen import generate_program
 
-code = """
+
+class FunctionInvalidTest(unittest.TestCase):
+    def test_undeclared_function(self):
+        code = """
 PROGRAM TEST
 INTEGER X, Y
 X = 5
@@ -11,21 +15,14 @@ PRINT *, Y
 END
 """
 
-ast = parser.parse(code)
-print("AST:")
-print(ast)
+        ast = parser.parse(code)
+        symbols, errors = check_program(ast)
 
-symbols, errors = check_program(ast)
-
-print("\nTabela de símbolos:")
-print(symbols)
-
-print("\nErros:")
-for e in errors:
-    print("-", e)
-
-if not errors:
-    print("\nCódigo gerado:")
-    vm_code = generate_program(ast)
-    for instr in vm_code:
-        print(instr)
+        self.assertEqual(
+            symbols,
+            {
+                'X': {'kind': 'scalar', 'type': 'INTEGER'},
+                'Y': {'kind': 'scalar', 'type': 'INTEGER'},
+            },
+        )
+        self.assertEqual(errors, ["Função 'FALTA' usada sem declaração"])

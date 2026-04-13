@@ -1,8 +1,12 @@
+import unittest
+
 from src.parser import parser
 from src.semantic import check_program
-from src.codegen import generate_program
 
-code = """
+
+class ArraySemanticInvalidTest(unittest.TestCase):
+    def test_array_invalid_index_and_scalar_use(self):
+        code = """
 PROGRAM TEST
 INTEGER NUMS(5), X
 LOGICAL IDX
@@ -12,21 +16,21 @@ PRINT *, NUMS
 END
 """
 
-ast = parser.parse(code)
-print("AST:")
-print(ast)
+        ast = parser.parse(code)
+        symbols, errors = check_program(ast)
 
-symbols, errors = check_program(ast)
-
-print("\nTabela de símbolos:")
-print(symbols)
-
-print("\nErros:")
-for e in errors:
-    print("-", e)
-
-if not errors:
-    print("\nCódigo gerado:")
-    vm_code = generate_program(ast)
-    for instr in vm_code:
-        print(instr)
+        self.assertEqual(
+            symbols,
+            {
+                'NUMS': {'kind': 'array', 'type': 'INTEGER', 'size': 5},
+                'X': {'kind': 'scalar', 'type': 'INTEGER'},
+                'IDX': {'kind': 'scalar', 'type': 'LOGICAL'},
+            },
+        )
+        self.assertEqual(
+            errors,
+            [
+                "Índice do array 'NUMS' deve ser INTEGER",
+                "Array 'NUMS' usado sem índice em expressão",
+            ],
+        )

@@ -1,8 +1,13 @@
+import unittest
+
+from src.codegen import generate_program
 from src.parser import parser
 from src.semantic import check_program
-from src.codegen import generate_program
 
-code = """
+
+class CodegenTest(unittest.TestCase):
+    def test_legacy_codegen_for_logical_program(self):
+        code = """
 PROGRAM TEST
 INTEGER N
 REAL R
@@ -17,16 +22,31 @@ PRINT *, X
 END
 """
 
-ast = parser.parse(code)
+        ast = parser.parse(code)
+        symbols, errors = check_program(ast)
 
-symbols, errors = check_program(ast)
-
-if errors:
-    print("Erros semânticos:")
-    for e in errors:
-        print("-", e)
-else:
-    vm_code = generate_program(ast)
-    print("Código gerado:")
-    for instr in vm_code:
-        print(instr)
+        self.assertEqual(errors, [])
+        self.assertEqual(
+            generate_program(ast),
+            [
+                "DECL N",
+                "DECL R",
+                "DECL X",
+                "PUSH 5",
+                "STORE N",
+                "LOAD N",
+                "PUSH 2",
+                "ADD",
+                "STORE R",
+                "PUSH 1",
+                "STORE X",
+                'PRINTSTR "Valor de N = "',
+                "LOAD N",
+                "PRINT",
+                "LOAD R",
+                "PRINT",
+                "LOAD X",
+                "PRINT",
+                "HALT",
+            ],
+        )

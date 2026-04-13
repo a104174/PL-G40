@@ -13,6 +13,8 @@ reserved = {
     'CONTINUE': 'CONTINUE',
     'GOTO': 'GOTO',
     'FUNCTION': 'FUNCTION',
+    'SUBROUTINE': 'SUBROUTINE',
+    'CALL': 'CALL',
     'RETURN': 'RETURN',
     'READ': 'READ',
     'PRINT': 'PRINT',
