@@ -11,6 +11,3 @@ src/parsetab.py
 # Test and tooling caches
 .pytest_cache/
 .mypy_cache/
-
-.codex/
-.codex/
