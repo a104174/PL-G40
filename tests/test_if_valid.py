@@ -6,7 +6,7 @@ from src.semantic import check_program
 
 
 class IfValidTest(unittest.TestCase):
-    def test_logical_if_falls_back_to_legacy(self):
+    def test_logical_if_uses_ewvm(self):
         code = """
 PROGRAM TEST
 INTEGER N
@@ -26,20 +26,23 @@ END
         self.assertEqual(
             generate_program(ast),
             [
-                "DECL N",
-                "DECL OK",
-                "PUSH 2",
-                "STORE N",
-                "PUSH 1",
-                "STORE OK",
-                "LOAD OK",
-                "LOAD N",
-                "PUSH 0",
-                "CMPGT",
+                "PUSHI 0",
+                "PUSHI 0",
+                "START",
+                "PUSHI 2",
+                "STOREG 0",
+                "PUSHI 1",
+                "STOREG 1",
+                "PUSHG 1",
+                "PUSHG 0",
+                "PUSHI 0",
+                "SUP",
                 "AND",
                 "JZ L0",
-                'PRINTSTR "VALIDO"',
-                "LABEL L0",
-                "HALT",
+                'PUSHS "VALIDO"',
+                "WRITES",
+                "WRITELN",
+                "L0:",
+                "STOP",
             ],
         )

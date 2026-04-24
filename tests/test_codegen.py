@@ -6,7 +6,7 @@ from src.semantic import check_program
 
 
 class CodegenTest(unittest.TestCase):
-    def test_legacy_codegen_for_logical_program(self):
+    def test_ewvm_codegen_for_logical_program(self):
         code = """
 PROGRAM TEST
 INTEGER N
@@ -29,24 +29,30 @@ END
         self.assertEqual(
             generate_program(ast),
             [
-                "DECL N",
-                "DECL R",
-                "DECL X",
-                "PUSH 5",
-                "STORE N",
-                "LOAD N",
-                "PUSH 2",
+                "PUSHI 0",
+                "PUSHF 0.0",
+                "PUSHI 0",
+                "START",
+                "PUSHI 5",
+                "STOREG 0",
+                "PUSHG 0",
+                "PUSHI 2",
                 "ADD",
-                "STORE R",
-                "PUSH 1",
-                "STORE X",
-                'PRINTSTR "Valor de N = "',
-                "LOAD N",
-                "PRINT",
-                "LOAD R",
-                "PRINT",
-                "LOAD X",
-                "PRINT",
-                "HALT",
+                "ITOF",
+                "STOREG 1",
+                "PUSHI 1",
+                "STOREG 2",
+                'PUSHS "Valor de N = "',
+                "WRITES",
+                "PUSHG 0",
+                "WRITEI",
+                "WRITELN",
+                "PUSHG 1",
+                "WRITEF",
+                "WRITELN",
+                "PUSHG 2",
+                "WRITEI",
+                "WRITELN",
+                "STOP",
             ],
         )

@@ -1,4 +1,4 @@
-SUPPORTED_EWVM_PHASE1_TYPES = {'INTEGER', 'REAL'}
+SUPPORTED_EWVM_PHASE1_TYPES = {'INTEGER', 'REAL', 'LOGICAL'}
 
 
 def normalize_program(ast):
@@ -184,7 +184,7 @@ def statement_supported_ewvm_phase1(stmt, layout, functions):
 def expression_supported_ewvm_phase1(expr, layout, functions):
     kind = expr[0]
 
-    if kind in ('number', 'id'):
+    if kind in ('number', 'bool', 'id'):
         if kind == 'id':
             return is_scalar_symbol(layout, expr[1])
         return True
@@ -196,9 +196,18 @@ def expression_supported_ewvm_phase1(expr, layout, functions):
 
     if kind == 'binop':
         _, op, left, right = expr
-        return op in ('+', '-', '*', '/') and (
-            expression_supported_ewvm_phase1(left, layout, functions)
-            and expression_supported_ewvm_phase1(right, layout, functions)
+        if op not in ('+', '-', '*', '/'):
+            return False
+
+        if not expression_supported_ewvm_phase1(left, layout, functions):
+            return False
+
+        if not expression_supported_ewvm_phase1(right, layout, functions):
+            return False
+
+        return (
+            infer_expression_type_ewvm_phase1(left, layout, functions) != 'LOGICAL'
+            and infer_expression_type_ewvm_phase1(right, layout, functions) != 'LOGICAL'
         )
 
     if kind == 'mod':
@@ -244,25 +253,54 @@ def function_call_supported_ewvm_phase1(expr, layout, functions):
     if function_info is None:
         return False
 
-    if len(arg_exprs) != 1:
+    param_types = function_info['param_types']
+    if len(arg_exprs) != len(param_types):
         return False
 
-    arg_expr = arg_exprs[0]
-    if not expression_supported_ewvm_phase1(arg_expr, layout, functions):
-        return False
+    for arg_expr, param_type in zip(arg_exprs, param_types):
+        if not expression_supported_ewvm_phase1(arg_expr, layout, functions):
+            return False
 
-    arg_type = infer_expression_type_ewvm_phase1(arg_expr, layout, functions)
-    return compatible_ewvm_types(function_info['param_type'], arg_type)
+        arg_type = infer_expression_type_ewvm_phase1(arg_expr, layout, functions)
+        if not compatible_ewvm_types(param_type, arg_type):
+            return False
+
+    return True
 
 
 def condition_supported_ewvm_phase1(cond, layout, functions):
     kind = cond[0]
 
-    if kind != 'relop':
-        return False
+    if kind == 'relop':
+        _, _, left, right = cond
+        if not expression_supported_ewvm_phase1(left, layout, functions):
+            return False
 
-    _, _, left, right = cond
-    return expression_supported_ewvm_phase1(left, layout, functions) and expression_supported_ewvm_phase1(right, layout, functions)
+        if not expression_supported_ewvm_phase1(right, layout, functions):
+            return False
+
+        return (
+            infer_expression_type_ewvm_phase1(left, layout, functions) != 'LOGICAL'
+            and infer_expression_type_ewvm_phase1(right, layout, functions) != 'LOGICAL'
+        )
+
+    if kind == 'logicop':
+        _, _, left, right = cond
+        return (
+            condition_supported_ewvm_phase1(left, layout, functions)
+            and condition_supported_ewvm_phase1(right, layout, functions)
+        )
+
+    if kind == 'not':
+        return condition_supported_ewvm_phase1(cond[1], layout, functions)
+
+    if kind in ('bool', 'id', 'indexed'):
+        return (
+            expression_supported_ewvm_phase1(cond, layout, functions)
+            and infer_expression_type_ewvm_phase1(cond, layout, functions) == 'LOGICAL'
+        )
+
+    return False
 
 
 def compatible_ewvm_types(target_type, expr_type):
@@ -273,6 +311,17 @@ def compatible_ewvm_types(target_type, expr_type):
         return True
 
     return False
+
+
+def emit_ewvm_type_conversion(source_type, target_type, code):
+    if source_type == target_type:
+        return
+
+    if target_type == 'REAL' and source_type == 'INTEGER':
+        code.append("ITOF")
+        return
+
+    raise NotImplementedError(f"Conversão EWVM não suportada: {source_type} -> {target_type}")
 
 
 def ewvm_string(value):
@@ -310,10 +359,6 @@ def collect_functions_ewvm(function_nodes):
         if return_type not in SUPPORTED_EWVM_PHASE1_TYPES:
             return None
 
-        if len(param_names) != 1:
-            return None
-
-        param_name = param_names[0]
         local_layout = {
             name: {
                 'kind': 'scalar',
@@ -323,7 +368,7 @@ def collect_functions_ewvm(function_nodes):
             }
         }
         local_offset = 1
-        param_type = None
+        param_types_by_name = {param_name: None for param_name in param_names}
 
         for stmt in body_statements:
             kind = stmt[0]
@@ -338,8 +383,8 @@ def collect_functions_ewvm(function_nodes):
                     if item_kind != 'scalar':
                         return None
 
-                    if decl_name == param_name:
-                        param_type = var_type
+                    if decl_name in param_types_by_name:
+                        param_types_by_name[decl_name] = var_type
                         continue
 
                     if decl_name == name or decl_name in local_layout:
@@ -353,24 +398,26 @@ def collect_functions_ewvm(function_nodes):
                     }
                     local_offset += 1
 
-            elif kind not in ('assign', 'return'):
+        param_types = []
+        param_count = len(param_names)
+        for index, param_name in enumerate(param_names):
+            param_type = param_types_by_name[param_name]
+            if param_type not in SUPPORTED_EWVM_PHASE1_TYPES:
                 return None
 
-        if param_type not in SUPPORTED_EWVM_PHASE1_TYPES:
-            return None
-
-        local_layout[param_name] = {
-            'kind': 'scalar',
-            'storage': 'param',
-            'type': param_type,
-            'offset': -1,
-        }
+            param_types.append(param_type)
+            local_layout[param_name] = {
+                'kind': 'scalar',
+                'storage': 'param',
+                'type': param_type,
+                'offset': index - param_count,
+            }
 
         functions[name] = {
-            'label': f"FUNC_{name}",
+            'label': f"FUNC{name}",
             'return_type': return_type,
-            'param_name': param_name,
-            'param_type': param_type,
+            'param_names': param_names,
+            'param_types': param_types,
             'layout': local_layout,
             'body': body_statements,
             'local_slots': local_offset,
@@ -387,22 +434,30 @@ def infer_expression_type_ewvm_phase1(expr, layout, functions=None):
     if kind == 'number':
         return 'REAL' if isinstance(expr[1], float) else 'INTEGER'
 
+    if kind == 'bool':
+        return 'LOGICAL'
+
     if kind == 'id':
         return get_global_info(layout, expr[1])['type']
 
     if kind == 'indexed':
         _, name, arg_exprs = expr
-        if len(arg_exprs) != 1:
-            raise NotImplementedError("Chamadas/indexações EWVM só suportam um argumento na fase 1")
-
-        index_expr = arg_exprs[0]
         if name in functions:
             function_info = functions[name]
-            arg_type = infer_expression_type_ewvm_phase1(index_expr, layout, functions)
-            if not compatible_ewvm_types(function_info['param_type'], arg_type):
-                raise NotImplementedError("Chamada EWVM com argumento incompatível")
+            if len(arg_exprs) != len(function_info['param_types']):
+                raise NotImplementedError("Chamada EWVM com número de argumentos incompatível")
+
+            for arg_expr, param_type in zip(arg_exprs, function_info['param_types']):
+                arg_type = infer_expression_type_ewvm_phase1(arg_expr, layout, functions)
+                if not compatible_ewvm_types(param_type, arg_type):
+                    raise NotImplementedError("Chamada EWVM com argumento incompatível")
+
             return function_info['return_type']
 
+        if len(arg_exprs) != 1:
+            raise NotImplementedError("Indexações EWVM só suportam um argumento")
+
+        index_expr = arg_exprs[0]
         info = get_global_info(layout, name)
 
         if info['kind'] != 'array':
@@ -524,6 +579,10 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
         code.append(f"PUSHI {value}")
         return 'INTEGER'
 
+    if kind == 'bool':
+        code.append("PUSHI 1" if expr[1] else "PUSHI 0")
+        return 'LOGICAL'
+
     if kind == 'id':
         info = get_global_info(layout, expr[1])
         emit_scalar_load_ewvm_phase1(info, code)
@@ -531,22 +590,32 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
 
     if kind == 'indexed':
         _, name, arg_exprs = expr
-        if len(arg_exprs) != 1:
-            raise NotImplementedError("Chamadas/indexações EWVM só suportam um argumento na fase 1")
-
-        index_expr = arg_exprs[0]
         if name in functions:
             function_info = functions[name]
-            arg_type = infer_expression_type_ewvm_phase1(index_expr, layout, functions)
+            param_types = function_info['param_types']
+            if len(arg_exprs) != len(param_types):
+                raise NotImplementedError("Chamada EWVM com número de argumentos incompatível")
 
-            generate_expression_ewvm_phase1(index_expr, code, layout, functions)
-            if function_info['param_type'] == 'REAL' and arg_type == 'INTEGER':
-                code.append("ITOF")
+            if not arg_exprs:
+                code.append("PUSHI 0")
+
+            for arg_expr, param_type in zip(arg_exprs, param_types):
+                arg_type = generate_expression_ewvm_phase1(arg_expr, code, layout, functions)
+                emit_ewvm_type_conversion(arg_type, param_type, code)
 
             code.append(f"PUSHA {function_info['label']}")
             code.append("CALL")
+
+            for _ in range(max(0, len(arg_exprs) - 1)):
+                code.append("SWAP")
+                code.append("POP 1")
+
             return function_info['return_type']
 
+        if len(arg_exprs) != 1:
+            raise NotImplementedError("Indexações EWVM só suportam um argumento")
+
+        index_expr = arg_exprs[0]
         info = get_global_info(layout, name)
 
         if info['kind'] != 'array':
@@ -561,15 +630,16 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
         _, op, left, right = expr
         left_type = infer_expression_type_ewvm_phase1(left, layout, functions)
         right_type = infer_expression_type_ewvm_phase1(right, layout, functions)
+        if left_type == 'LOGICAL' or right_type == 'LOGICAL':
+            raise NotImplementedError("Operações aritméticas EWVM não suportam LOGICAL")
+
         result_type = 'REAL' if left_type == 'REAL' or right_type == 'REAL' else 'INTEGER'
 
         generate_expression_ewvm_phase1(left, code, layout, functions)
-        if result_type == 'REAL' and left_type == 'INTEGER':
-            code.append("ITOF")
+        emit_ewvm_type_conversion(left_type, result_type, code)
 
         generate_expression_ewvm_phase1(right, code, layout, functions)
-        if result_type == 'REAL' and right_type == 'INTEGER':
-            code.append("ITOF")
+        emit_ewvm_type_conversion(right_type, result_type, code)
 
         int_ops = {'+': 'ADD', '-': 'SUB', '*': 'MUL', '/': 'DIV'}
         real_ops = {'+': 'FADD', '-': 'FSUB', '*': 'FMUL', '/': 'FDIV'}
@@ -595,6 +665,24 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
 def generate_condition_ewvm_phase1(cond, code, layout, functions):
     kind = cond[0]
 
+    if kind == 'logicop':
+        _, op, left, right = cond
+        generate_condition_ewvm_phase1(left, code, layout, functions)
+        generate_condition_ewvm_phase1(right, code, layout, functions)
+        code.append("AND" if op == '.AND.' else "OR")
+        return
+
+    if kind == 'not':
+        generate_condition_ewvm_phase1(cond[1], code, layout, functions)
+        code.append("NOT")
+        return
+
+    if kind in ('bool', 'id', 'indexed'):
+        cond_type = generate_expression_ewvm_phase1(cond, code, layout, functions)
+        if cond_type != 'LOGICAL':
+            raise NotImplementedError(f"Condição EWVM deve ser LOGICAL, obtido {cond_type}")
+        return
+
     if kind != 'relop':
         raise NotImplementedError(f"Condição não suportada na fase EWVM 1: {kind}")
 
@@ -604,12 +692,10 @@ def generate_condition_ewvm_phase1(cond, code, layout, functions):
     comparison_type = 'REAL' if left_type == 'REAL' or right_type == 'REAL' else 'INTEGER'
 
     generate_expression_ewvm_phase1(left, code, layout, functions)
-    if comparison_type == 'REAL' and left_type == 'INTEGER':
-        code.append("ITOF")
+    emit_ewvm_type_conversion(left_type, comparison_type, code)
 
     generate_expression_ewvm_phase1(right, code, layout, functions)
-    if comparison_type == 'REAL' and right_type == 'INTEGER':
-        code.append("ITOF")
+    emit_ewvm_type_conversion(right_type, comparison_type, code)
 
     equality_ops = {
         '.EQ.': ['EQUAL'],
@@ -654,18 +740,14 @@ def generate_statement_ewvm_phase1(stmt, code, layout, functions, label_counter,
             emit_global_address_ewvm_phase1(info, code)
             generate_array_index_ewvm_phase1(index_expr, code, layout, functions)
             expr_type = generate_expression_ewvm_phase1(expr, code, layout, functions)
-
-            if info['type'] == 'REAL' and expr_type == 'INTEGER':
-                code.append("ITOF")
+            emit_ewvm_type_conversion(expr_type, info['type'], code)
 
             code.append("STOREN")
             return
 
         info = get_global_info(layout, target)
         expr_type = generate_expression_ewvm_phase1(expr, code, layout, functions)
-
-        if info['type'] == 'REAL' and expr_type == 'INTEGER':
-            code.append("ITOF")
+        emit_ewvm_type_conversion(expr_type, info['type'], code)
 
         emit_scalar_store_ewvm_phase1(info, code)
         return
@@ -742,12 +824,12 @@ def generate_statement_ewvm_phase1(stmt, code, layout, functions, label_counter,
 
     if kind == 'goto':
         _, label = stmt
-        code.append(f"JUMP {user_label(label)}")
+        code.append(f"JUMP {user_label(label, current_function)}")
         return
 
     if kind == 'label':
         _, label, inner_stmt = stmt
-        emit_label_ewvm_phase1(code, user_label(label))
+        emit_label_ewvm_phase1(code, user_label(label, current_function))
         generate_statement_ewvm_phase1(inner_stmt, code, layout, functions, label_counter, current_function)
         return
 
@@ -757,12 +839,11 @@ def generate_statement_ewvm_phase1(stmt, code, layout, functions, label_counter,
     if kind == 'do':
         _, label, var, start_expr, end_expr, body_statements = stmt
         start_label = new_label(label_counter)
-        end_label = user_label(label)
+        end_label = user_label(label, current_function)
         control_info = get_global_info(layout, var)
 
         start_type = generate_expression_ewvm_phase1(start_expr, code, layout, functions)
-        if control_info['type'] == 'REAL' and start_type == 'INTEGER':
-            code.append("ITOF")
+        emit_ewvm_type_conversion(start_type, control_info['type'], code)
         emit_scalar_store_ewvm_phase1(control_info, code)
 
         emit_label_ewvm_phase1(code, start_label)
@@ -870,8 +951,11 @@ def new_label(label_counter):
     return label
 
 
-def user_label(label):
-    return f"LBL_{label}"
+def user_label(label, current_function=None):
+    if current_function is None:
+        return f"LBL{label}"
+
+    return f"{current_function}LBL{label}"
 
 
 def collect_functions(function_nodes):

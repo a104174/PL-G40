@@ -40,7 +40,7 @@ END
             "PUSHG 0",
             "PUSHG 1",
             "INFEQ",
-            "JZ LBL_10",
+            "JZ LBL10",
             "PUSHG 0",
             "WRITEI",
             "WRITELN",
@@ -49,6 +49,6 @@ END
             "ADD",
             "STOREG 0",
             "JUMP L0",
-            "LBL_10:",
+            "LBL10:",
             "STOP",
         ])
