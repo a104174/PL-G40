@@ -219,6 +219,9 @@ def expression_supported_ewvm_phase1(expr, layout, functions):
             and infer_expression_type_ewvm_phase1(right, layout, functions) == 'INTEGER'
         )
 
+    if kind == 'uminus':
+        return expression_supported_ewvm_phase1(expr[1], layout, functions)
+
     return False
 
 
@@ -488,6 +491,11 @@ def infer_expression_type_ewvm_phase1(expr, layout, functions=None):
 
         raise NotImplementedError("MOD na EWVM só é suportado com operandos INTEGER")
 
+
+    if kind == 'uminus':
+        return infer_expression_type_ewvm_phase1(expr[1], layout, functions)
+
+
     raise NotImplementedError(f"Expressão não suportada na fase EWVM 1: {kind}")
 
 
@@ -596,9 +604,6 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
             if len(arg_exprs) != len(param_types):
                 raise NotImplementedError("Chamada EWVM com número de argumentos incompatível")
 
-            if not arg_exprs:
-                code.append("PUSHI 0")
-
             for arg_expr, param_type in zip(arg_exprs, param_types):
                 arg_type = generate_expression_ewvm_phase1(arg_expr, code, layout, functions)
                 emit_ewvm_type_conversion(arg_type, param_type, code)
@@ -630,10 +635,7 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
         _, op, left, right = expr
         left_type = infer_expression_type_ewvm_phase1(left, layout, functions)
         right_type = infer_expression_type_ewvm_phase1(right, layout, functions)
-        if left_type == 'LOGICAL' or right_type == 'LOGICAL':
-            raise NotImplementedError("Operações aritméticas EWVM não suportam LOGICAL")
-
-        result_type = 'REAL' if left_type == 'REAL' or right_type == 'REAL' else 'INTEGER'
+        result_type = infer_expression_type_ewvm_phase1(expr, layout, functions)
 
         generate_expression_ewvm_phase1(left, code, layout, functions)
         emit_ewvm_type_conversion(left_type, result_type, code)
@@ -648,16 +650,22 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
 
     if kind == 'mod':
         _, left, right = expr
-        left_type = infer_expression_type_ewvm_phase1(left, layout, functions)
-        right_type = infer_expression_type_ewvm_phase1(right, layout, functions)
-
-        if left_type != 'INTEGER' or right_type != 'INTEGER':
-            raise NotImplementedError("MOD na EWVM só é suportado com operandos INTEGER")
+        result_type = infer_expression_type_ewvm_phase1(expr, layout, functions)
 
         generate_expression_ewvm_phase1(left, code, layout, functions)
         generate_expression_ewvm_phase1(right, code, layout, functions)
         code.append("MOD")
-        return 'INTEGER'
+        return result_type
+
+    if kind == 'uminus':
+        expr_type = generate_expression_ewvm_phase1(expr[1], code, layout, functions)
+        if expr_type == 'REAL':
+            code.append("PUSHF -1.0")
+            code.append("FMUL")
+        else:
+            code.append("PUSHI -1")
+            code.append("MUL")
+        return expr_type
 
     raise NotImplementedError(f"Expressão não suportada na fase EWVM 1: {kind}")
 

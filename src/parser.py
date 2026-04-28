@@ -326,6 +326,10 @@ def p_expression_false(p):
     'expression : DOT_FALSE'
     p[0] = ('bool', False)
 
+def p_expression_uminus(p):
+    'expression : MINUS expression %prec UMINUS'
+    p[0] = ('uminus', p[2])
+
 # Condições
 def p_condition_relop(p):
     '''
@@ -366,6 +370,7 @@ precedence = (
     ('nonassoc', 'DOT_EQ', 'DOT_NE', 'DOT_LT', 'DOT_LE', 'DOT_GT', 'DOT_GE'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
+    ('right', 'UMINUS'),
 )
 
 def p_error(p):
