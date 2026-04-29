@@ -1,12 +1,11 @@
 import unittest
 
-from src.codegen import generate_program
 from src.parser import parser
 from src.semantic import check_program
 
 
 class EwvmModRealUnsupportedTest(unittest.TestCase):
-    def test_mod_real_is_rejected_without_ewvm_backend(self):
+    def test_mod_real_is_rejected_semantically(self):
         code = """
 PROGRAM TEST
 REAL A, X
@@ -19,9 +18,6 @@ END
 """
 
         ast = parser.parse(code)
-        symbols, errors = check_program(ast)
+        _, errors = check_program(ast)
 
-        self.assertEqual(errors, [])
-
-        with self.assertRaisesRegex(NotImplementedError, "Geração EWVM não suportada"):
-            generate_program(ast)
+        self.assertEqual(errors, ["Operação MOD inválida com tipos REAL e INTEGER"])

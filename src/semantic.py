@@ -11,7 +11,7 @@ def check_program(ast):
     symbols = {}
     errors = []
     reported = set()
-    labels = collect_labels(statements)
+    labels = collect_labels(statements, errors=errors, reported=reported)
     functions = collect_functions(function_nodes, errors, reported)
 
     for function_node in function_nodes:
@@ -159,13 +159,35 @@ def check_function(function_node, functions, errors, reported):
     local_symbols = {}
     if kind == 'function':
         local_symbols[name] = {'kind': 'scalar', 'type': return_type}
-    local_labels = collect_labels(body_statements)
+    local_labels = collect_labels(body_statements, errors=errors, reported=reported)
 
     for stmt in body_statements:
         check_statement(stmt, local_symbols, functions, errors, reported, local_labels, name)
 
 
-def collect_labels(statements, labels=None):
+def format_label(label):
+    return str(label)
+
+
+def is_integer_label(label):
+    return isinstance(label, int) and not isinstance(label, bool)
+
+
+def add_label(label, labels, errors, reported, context):
+    if not is_integer_label(label):
+        if errors is not None:
+            add_error(f"Label '{format_label(label)}' em {context} deve ser inteiro", errors, reported)
+        return
+
+    if label in labels:
+        if errors is not None:
+            add_error(f"Label '{format_label(label)}' declarado mais do que uma vez", errors, reported)
+        return
+
+    labels.add(label)
+
+
+def collect_labels(statements, labels=None, errors=None, reported=None):
     if labels is None:
         labels = set()
 
@@ -173,17 +195,18 @@ def collect_labels(statements, labels=None):
         kind = stmt[0]
 
         if kind == 'label':
-            labels.add(stmt[1])
-            collect_labels([stmt[2]], labels)
+            inner_context = 'CONTINUE' if stmt[2][0] == 'continue' else 'statement'
+            add_label(stmt[1], labels, errors, reported, inner_context)
+            collect_labels([stmt[2]], labels, errors, reported)
 
         elif kind == 'do':
-            labels.add(stmt[1])
-            collect_labels(stmt[5], labels)
+            add_label(stmt[1], labels, errors, reported, 'DO')
+            collect_labels(stmt[5], labels, errors, reported)
 
         elif kind == 'if':
-            collect_labels(stmt[2], labels)
+            collect_labels(stmt[2], labels, errors, reported)
             if stmt[3] is not None:
-                collect_labels(stmt[3], labels)
+                collect_labels(stmt[3], labels, errors, reported)
 
     return labels
 
@@ -423,7 +446,9 @@ def check_statement(stmt, symbols, functions, errors, reported, labels, in_funct
 
     elif kind == 'goto':
         _, label = stmt
-        if label not in labels:
+        if not is_integer_label(label):
+            add_error(f"Label '{format_label(label)}' em GOTO deve ser inteiro", errors, reported)
+        elif label not in labels:
             add_error(f"Label '{label}' usado em GOTO não existe", errors, reported)
 
     elif kind == 'return':
@@ -452,6 +477,9 @@ def check_expression(expr, symbols, functions, errors, reported):
         _, left, right = expr
         check_expression(left, symbols, functions, errors, reported)
         check_expression(right, symbols, functions, errors, reported)
+
+    elif kind == 'uminus':
+        infer_type(expr, symbols, functions, errors, reported)
 
 
 def infer_type(expr, symbols, functions, errors, reported):
@@ -514,7 +542,7 @@ def infer_type(expr, symbols, functions, errors, reported):
         if left_type is None or right_type is None:
             return None
 
-        if left_type == 'LOGICAL' or right_type == 'LOGICAL':
+        if left_type != 'INTEGER' or right_type != 'INTEGER':
             add_error(
                 f"Operação MOD inválida com tipos {left_type} e {right_type}",
                 errors,
@@ -522,9 +550,19 @@ def infer_type(expr, symbols, functions, errors, reported):
             )
             return None
 
-        if left_type == 'REAL' or right_type == 'REAL':
-            return 'REAL'
         return 'INTEGER'
+
+    if kind == 'uminus':
+        operand_type = infer_type(expr[1], symbols, functions, errors, reported)
+
+        if operand_type is None:
+            return None
+
+        if operand_type == 'LOGICAL':
+            add_error("Operador unário '-' inválido sobre tipo LOGICAL", errors, reported)
+            return None
+
+        return operand_type
 
     return None
 
@@ -532,7 +570,7 @@ def infer_type(expr, symbols, functions, errors, reported):
 def infer_condition_type(cond, symbols, functions, errors, reported):
     kind = cond[0]
 
-    if kind in ('number', 'bool', 'id', 'indexed', 'binop'):
+    if kind in ('number', 'bool', 'id', 'indexed', 'binop', 'uminus'):
         return infer_type(cond, symbols, functions, errors, reported)
 
     if kind == 'relop':

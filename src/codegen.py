@@ -94,6 +94,8 @@ def statement_supported_ewvm_phase1(stmt, layout, functions):
     kind = stmt[0]
 
     if kind == 'label':
+        if not isinstance(stmt[1], int):
+            return False
         return statement_supported_ewvm_phase1(stmt[2], layout, functions)
 
     if kind == 'declare':
@@ -150,7 +152,7 @@ def statement_supported_ewvm_phase1(stmt, layout, functions):
         return True
 
     if kind == 'goto':
-        return True
+        return isinstance(stmt[1], int)
 
     if kind == 'call':
         return False
@@ -160,6 +162,8 @@ def statement_supported_ewvm_phase1(stmt, layout, functions):
 
     if kind == 'do':
         _, _, var, start_expr, end_expr, body_statements = stmt
+        if not isinstance(stmt[1], int):
+            return False
 
         if not expression_supported_ewvm_phase1(start_expr, layout, functions):
             return False
@@ -220,7 +224,10 @@ def expression_supported_ewvm_phase1(expr, layout, functions):
         )
 
     if kind == 'uminus':
-        return expression_supported_ewvm_phase1(expr[1], layout, functions)
+        return (
+            expression_supported_ewvm_phase1(expr[1], layout, functions)
+            and infer_expression_type_ewvm_phase1(expr[1], layout, functions) != 'LOGICAL'
+        )
 
     return False
 
@@ -603,6 +610,9 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
             param_types = function_info['param_types']
             if len(arg_exprs) != len(param_types):
                 raise NotImplementedError("Chamada EWVM com número de argumentos incompatível")
+
+            if len(arg_exprs) == 0:
+                code.append("PUSHN 1")
 
             for arg_expr, param_type in zip(arg_exprs, param_types):
                 arg_type = generate_expression_ewvm_phase1(arg_expr, code, layout, functions)

@@ -22,6 +22,25 @@ END
         self.assertEqual(errors, [])
 
         vm_code = generate_program(ast)
-        self.assertNotIn("PUSHI 0\nPUSHA FUNCZERO", "\n".join(vm_code))
-        self.assertIn("PUSHA FUNCZERO", vm_code)
-        self.assertIn("CALL", vm_code)
+        self.assertEqual(
+            vm_code,
+            [
+                "PUSHI 0",
+                "START",
+                "PUSHN 1",
+                "PUSHA FUNCZERO",
+                "CALL",
+                "STOREG 0",
+                "PUSHG 0",
+                "WRITEI",
+                "WRITELN",
+                "STOP",
+                "FUNCZERO:",
+                "PUSHI 0",
+                "PUSHI 0",
+                "STOREL 0",
+                "PUSHL 0",
+                "STOREL -1",
+                "RETURN",
+            ],
+        )
