@@ -1,7 +1,18 @@
+"""Geração de código EWVM a partir da AST validada.
+
+O backend percorre a AST e emite uma lista de instruções EWVM. Antes de gerar
+código, confirma se o programa pertence ao subconjunto implementado para a
+EWVM; construções fora desse subconjunto são rejeitadas explicitamente.
+
+O sufixo `phase1` ficou do desenvolvimento incremental do backend. Atualmente
+estas funções constituem o backend principal do compilador.
+"""
+
 SUPPORTED_EWVM_PHASE1_TYPES = {'INTEGER', 'REAL', 'LOGICAL'}
 
 
 def normalize_program(ast):
+    """Extrai `(nome, statements, subprogramas)` de uma AST de programa."""
     if ast[0] != 'program':
         raise Exception("AST inválida")
 
@@ -15,6 +26,12 @@ def normalize_program(ast):
 
 
 def generate_program(ast):
+    """Gera código EWVM para um programa suportado.
+
+    Esta é a entrada pública do backend. O teste de suporte é feito antes da
+    geração para evitar produzir código parcial ou instruções que a EWVM não
+    conhece.
+    """
     if not supports_ewvm_phase1(ast):
         raise NotImplementedError("Geração EWVM não suportada para este programa")
 
@@ -22,6 +39,11 @@ def generate_program(ast):
 
 
 def build_global_layout(statements):
+    """Constrói o layout de memória global.
+
+    Cada variável global recebe um offset fixo. Escalares ocupam uma posição;
+    arrays ocupam um bloco contíguo com o tamanho declarado.
+    """
     layout = {}
     offset = 0
 
@@ -63,10 +85,12 @@ def build_global_layout(statements):
 
 
 def iter_layout(layout):
+    """Itera símbolos pela ordem do offset de memória."""
     return sorted(layout.items(), key=lambda item: item[1]['offset'])
 
 
 def supports_ewvm_phase1(ast):
+    """Verifica se todo o programa é gerável pelo backend EWVM atual."""
     _, statements, function_nodes = normalize_program(ast)
     layout = build_global_layout(statements)
     functions = collect_functions_ewvm(function_nodes)
@@ -91,6 +115,12 @@ def supports_ewvm_phase1(ast):
 
 
 def statement_supported_ewvm_phase1(stmt, layout, functions):
+    """Verifica se um statement é suportado no layout dado.
+
+    Esta função é conservadora: se houver dúvida sobre uma construção, devolve
+    `False` para que o compilador rejeite o programa em vez de gerar EWVM
+    inválida.
+    """
     kind = stmt[0]
 
     if kind == 'label':
@@ -186,6 +216,7 @@ def statement_supported_ewvm_phase1(stmt, layout, functions):
 
 
 def expression_supported_ewvm_phase1(expr, layout, functions):
+    """Verifica se uma expressão pode ser traduzida para EWVM."""
     kind = expr[0]
 
     if kind in ('number', 'bool', 'id'):
@@ -233,6 +264,7 @@ def expression_supported_ewvm_phase1(expr, layout, functions):
 
 
 def array_access_supported_ewvm_phase1(expr, layout, functions):
+    """Confirma se um acesso indexado representa um array global suportado."""
     if not isinstance(expr, tuple) or expr[0] not in ('array_access', 'indexed'):
         return False
 
@@ -254,6 +286,7 @@ def array_access_supported_ewvm_phase1(expr, layout, functions):
 
 
 def function_call_supported_ewvm_phase1(expr, layout, functions):
+    """Confirma se uma expressão `NOME(...)` é uma chamada de função suportada."""
     if not isinstance(expr, tuple) or expr[0] != 'indexed':
         return False
 
@@ -279,6 +312,7 @@ def function_call_supported_ewvm_phase1(expr, layout, functions):
 
 
 def condition_supported_ewvm_phase1(cond, layout, functions):
+    """Verifica se uma condição pode ser emitida como valor lógico EWVM."""
     kind = cond[0]
 
     if kind == 'relop':
@@ -314,6 +348,7 @@ def condition_supported_ewvm_phase1(cond, layout, functions):
 
 
 def compatible_ewvm_types(target_type, expr_type):
+    """Indica se o backend consegue converter `expr_type` para `target_type`."""
     if target_type == expr_type:
         return True
 
@@ -324,6 +359,12 @@ def compatible_ewvm_types(target_type, expr_type):
 
 
 def emit_ewvm_type_conversion(source_type, target_type, code):
+    """Emite conversão implícita entre tipos EWVM, quando existe.
+
+    O backend só implementa `INTEGER -> REAL`, traduzido pela instrução `ITOF`.
+    Qualquer outra conversão deve ter sido rejeitada antes pela semântica ou
+    pelo teste de suporte.
+    """
     if source_type == target_type:
         return
 
@@ -335,11 +376,13 @@ def emit_ewvm_type_conversion(source_type, target_type, code):
 
 
 def ewvm_string(value):
+    """Escapa uma string para o formato aceite pela instrução `PUSHS`."""
     escaped = value.replace('\\', '\\\\').replace('"', '\\"')
     return f'"{escaped}"'
 
 
 def get_global_info(layout, name):
+    """Obtém informação de um símbolo no layout atual ou falha explicitamente."""
     info = layout.get(name)
     if info is None:
         raise Exception(f"Símbolo '{name}' não encontrado no layout EWVM")
@@ -348,16 +391,25 @@ def get_global_info(layout, name):
 
 
 def is_scalar_symbol(layout, name):
+    """Indica se o nome existe no layout e representa um escalar."""
     info = layout.get(name)
     return info is not None and info['kind'] == 'scalar'
 
 
 def is_array_symbol(layout, name):
+    """Indica se o nome existe no layout e representa um array."""
     info = layout.get(name)
     return info is not None and info['kind'] == 'array'
 
 
 def collect_functions_ewvm(function_nodes):
+    """Constrói metadados necessários para gerar funções EWVM.
+
+    Apenas `FUNCTION` é suportado. Subrotinas fazem a função devolver `None`,
+    sinalizando ao chamador que o programa deve ser rejeitado. Para cada função
+    é criado um layout local com símbolo de retorno, variáveis locais e
+    parâmetros.
+    """
     functions = {}
 
     for function_node in function_nodes:
@@ -437,6 +489,7 @@ def collect_functions_ewvm(function_nodes):
 
 
 def infer_expression_type_ewvm_phase1(expr, layout, functions=None):
+    """Infere o tipo EWVM de uma expressão já validada semanticamente."""
     kind = expr[0]
     if functions is None:
         functions = {}
@@ -507,6 +560,12 @@ def infer_expression_type_ewvm_phase1(expr, layout, functions=None):
 
 
 def emit_global_initialization_ewvm_phase1(code, layout):
+    """Reserva e inicializa a memória global antes de `START`.
+
+    A EWVM usa os valores empilhados antes de `START` como espaço global. Arrays
+    de inteiros/lógicos podem usar `PUSHN`; arrays reais são inicializados
+    posição a posição para garantir o tipo correto.
+    """
     for _, info in iter_layout(layout):
         if info['kind'] == 'array':
             if info['type'] == 'REAL':
@@ -522,10 +581,16 @@ def emit_global_initialization_ewvm_phase1(code, layout):
 
 
 def emit_label_ewvm_phase1(code, label):
+    """Emite uma label EWVM."""
     code.append(f"{label}:")
 
 
 def emit_global_address_ewvm_phase1(info, code):
+    """Emite o endereço base de um símbolo global.
+
+    Arrays são manipulados por endereço com `PUSHGP`, offset e operações
+    indiretas como `LOADN` e `STOREN`.
+    """
     code.append("PUSHGP")
     if info['offset'] != 0:
         code.append(f"PUSHI {info['offset']}")
@@ -533,6 +598,11 @@ def emit_global_address_ewvm_phase1(info, code):
 
 
 def generate_array_index_ewvm_phase1(index_expr, code, layout, functions):
+    """Gera o índice usado para acesso a array.
+
+    O Fortran usado nos exemplos indexa arrays a partir de 1. A EWVM usa offsets
+    a partir de 0, por isso o gerador subtrai 1 ao índice calculado.
+    """
     index_type = generate_expression_ewvm_phase1(index_expr, code, layout, functions)
 
     if index_type != 'INTEGER':
@@ -543,6 +613,7 @@ def generate_array_index_ewvm_phase1(index_expr, code, layout, functions):
 
 
 def emit_scalar_load_ewvm_phase1(info, code):
+    """Emite código para carregar um escalar para a stack de operandos."""
     if info.get('storage') == 'global':
         code.append(f"PUSHG {info['offset']}")
         return
@@ -556,6 +627,7 @@ def emit_scalar_load_ewvm_phase1(info, code):
 
 
 def emit_scalar_store_ewvm_phase1(info, code):
+    """Emite código para guardar o topo da stack num escalar."""
     if info.get('storage') == 'global':
         code.append(f"STOREG {info['offset']}")
         return
@@ -564,6 +636,7 @@ def emit_scalar_store_ewvm_phase1(info, code):
 
 
 def emit_slot_initialization_ewvm_phase1(info, code):
+    """Emite o valor inicial de uma variável local."""
     if info['type'] == 'REAL':
         code.append("PUSHF 0.0")
     else:
@@ -571,6 +644,7 @@ def emit_slot_initialization_ewvm_phase1(info, code):
 
 
 def has_explicit_return(statements):
+    """Indica se uma função contém pelo menos um `RETURN` explícito."""
     for stmt in statements:
         kind = stmt[0]
         if kind == 'return':
@@ -583,6 +657,12 @@ def has_explicit_return(statements):
 
 
 def generate_expression_ewvm_phase1(expr, code, layout, functions):
+    """Gera EWVM para uma expressão e devolve o seu tipo.
+
+    A função deixa o valor calculado no topo da stack de operandos. Chamadas de
+    função, acessos a arrays e conversões implícitas são tratados aqui porque
+    todos aparecem no nível de expressão.
+    """
     kind = expr[0]
 
     if kind == 'number':
@@ -611,6 +691,8 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
             if len(arg_exprs) != len(param_types):
                 raise NotImplementedError("Chamada EWVM com número de argumentos incompatível")
 
+            # A EWVM espera que uma chamada deixe espaço para o valor de retorno.
+            # Funções sem argumentos precisam desse espaço criado explicitamente.
             if len(arg_exprs) == 0:
                 code.append("PUSHN 1")
 
@@ -621,6 +703,8 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
             code.append(f"PUSHA {function_info['label']}")
             code.append("CALL")
 
+            # Depois do CALL, o resultado fica junto aos argumentos usados na
+            # chamada. Os argumentos são removidos preservando o valor de retorno.
             for _ in range(max(0, len(arg_exprs) - 1)):
                 code.append("SWAP")
                 code.append("POP 1")
@@ -681,6 +765,11 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
 
 
 def generate_condition_ewvm_phase1(cond, code, layout, functions):
+    """Gera EWVM para uma condição.
+
+    O resultado fica na stack como valor lógico inteiro (`0` para falso, `1`
+    para verdadeiro), que pode ser consumido por `JZ` ou por operadores lógicos.
+    """
     kind = cond[0]
 
     if kind == 'logicop':
@@ -741,6 +830,12 @@ def generate_condition_ewvm_phase1(cond, code, layout, functions):
 
 
 def generate_statement_ewvm_phase1(stmt, code, layout, functions, label_counter, current_function=None):
+    """Gera EWVM para um statement.
+
+    `layout` representa o espaço de símbolos visível no contexto atual. No
+    programa principal é o layout global; dentro de funções é o layout local da
+    função. `current_function` permite qualificar labels e tratar `RETURN`.
+    """
     kind = stmt[0]
 
     if kind == 'declare':
@@ -899,6 +994,12 @@ def generate_statement_ewvm_phase1(stmt, code, layout, functions, label_counter,
 
 
 def generate_function_ewvm_phase1(function_node, function_info, code, functions, label_counter):
+    """Emite o corpo EWVM de uma função.
+
+    Funções são colocadas depois do `STOP` do programa principal. As variáveis
+    locais são inicializadas no início da função. Se o corpo não tiver `RETURN`,
+    o valor da variável com o mesmo nome da função é devolvido no fim.
+    """
     _, _, name, _, body_statements = function_node
 
     emit_label_ewvm_phase1(code, function_info['label'])
@@ -924,6 +1025,7 @@ def generate_function_ewvm_phase1(function_node, function_info, code, functions,
 
 
 def generate_program_ewvm_phase1(ast):
+    """Gera a lista completa de instruções EWVM para um programa."""
     _, statements, function_nodes = normalize_program(ast)
     layout = build_global_layout(statements)
     functions = collect_functions_ewvm(function_nodes)
@@ -946,12 +1048,18 @@ def generate_program_ewvm_phase1(ast):
 
 
 def new_label(label_counter):
+    """Cria uma label interna única do tipo `L0`, `L1`, ..."""
     label = f"L{label_counter[0]}"
     label_counter[0] += 1
     return label
 
 
 def user_label(label, current_function=None):
+    """Converte uma label Fortran para uma label EWVM válida.
+
+    Labels dentro de funções recebem o nome da função como prefixo para evitar
+    colisões com labels iguais no programa principal.
+    """
     if current_function is None:
         return f"LBL{label}"
 
@@ -959,6 +1067,7 @@ def user_label(label, current_function=None):
 
 
 def get_decl_info(item):
+    """Normaliza um item de declaração do parser para uso no codegen."""
     if isinstance(item, tuple):
         if item[0] == 'scalar':
             return 'scalar', item[1], None

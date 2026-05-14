@@ -1,4 +1,22 @@
+"""Análise semântica da AST.
+
+Esta fase valida propriedades que a gramática não consegue garantir sozinha:
+declaração de variáveis, compatibilidade de tipos, uso correto de arrays,
+existência de labels, coerência de chamadas a funções/subrotinas e validade de
+`RETURN`.
+
+As funções deste módulo acumulam erros em vez de parar no primeiro problema.
+Isso permite devolver ao utilizador uma lista mais útil de correções a fazer.
+"""
+
+
 def check_program(ast):
+    """Valida semanticamente um programa completo.
+
+    Recebe a AST produzida pelo parser, recolhe labels e subprogramas, valida
+    funções/subrotinas e por fim percorre o corpo principal. Devolve a tabela de
+    símbolos globais e a lista de erros encontrados.
+    """
     if ast[0] != 'program':
         raise Exception("AST inválida")
 
@@ -24,12 +42,23 @@ def check_program(ast):
 
 
 def add_error(msg, errors, reported):
+    """Adiciona um erro apenas uma vez.
+
+    A mesma inconsistência pode ser descoberta por mais de uma verificação
+    recursiva. O conjunto `reported` evita mensagens duplicadas.
+    """
     if msg not in reported:
         errors.append(msg)
         reported.add(msg)
 
 
 def get_symbol_info(name, symbols):
+    """Obtém informação normalizada de um símbolo.
+
+    Versões antigas da tabela podiam guardar apenas a string do tipo. Esta
+    função uniformiza o acesso, devolvendo sempre um dicionário com `kind` e
+    `type` quando o símbolo existe.
+    """
     info = symbols.get(name)
 
     if info is None:
@@ -42,6 +71,12 @@ def get_symbol_info(name, symbols):
 
 
 def get_decl_info(item, var_type):
+    """Converte um item de declaração num par `(nome, info)`.
+
+    O parser representa escalares e arrays de forma diferente. A análise
+    semântica usa esta função para obter uma entrada pronta a colocar na tabela
+    de símbolos.
+    """
     if isinstance(item, tuple):
         if item[0] == 'scalar':
             return item[1], {'kind': 'scalar', 'type': var_type}
@@ -52,6 +87,12 @@ def get_decl_info(item, var_type):
 
 
 def collect_functions(function_nodes, errors, reported):
+    """Recolhe assinaturas de funções e subrotinas.
+
+    Nesta primeira passagem só são registados nome, espécie, parâmetros e corpo.
+    Os tipos dos parâmetros são preenchidos depois, quando as declarações locais
+    do subprograma forem analisadas.
+    """
     functions = {}
 
     for function_node in function_nodes:
@@ -81,6 +122,12 @@ def collect_functions(function_nodes, errors, reported):
 
 
 def find_parameter_types(function_name, param_names, body_statements, errors, reported):
+    """Determina os tipos dos parâmetros formais de um subprograma.
+
+    No subconjunto suportado, os parâmetros aparecem na lista da função e os seus
+    tipos são declarados no corpo. Esta função cruza essas duas fontes e reporta
+    parâmetros não declarados ou declarados como arrays.
+    """
     param_types = {param_name: None for param_name in param_names}
 
     for stmt in body_statements:
@@ -120,6 +167,11 @@ def find_parameter_types(function_name, param_names, body_statements, errors, re
 
 
 def check_function(function_node, functions, errors, reported):
+    """Valida o corpo de uma função ou subrotina.
+
+    Cria uma tabela de símbolos local, acrescenta o símbolo de retorno quando o
+    subprograma é uma função e valida todos os statements no contexto local.
+    """
     kind = function_node[0]
 
     if kind == 'function':
@@ -166,14 +218,17 @@ def check_function(function_node, functions, errors, reported):
 
 
 def format_label(label):
+    """Converte labels para texto em mensagens de erro."""
     return str(label)
 
 
 def is_integer_label(label):
+    """Indica se um valor é uma label inteira válida."""
     return isinstance(label, int) and not isinstance(label, bool)
 
 
 def add_label(label, labels, errors, reported, context):
+    """Regista uma label, validando tipo e duplicação."""
     if not is_integer_label(label):
         if errors is not None:
             add_error(f"Label '{format_label(label)}' em {context} deve ser inteiro", errors, reported)
@@ -188,6 +243,12 @@ def add_label(label, labels, errors, reported, context):
 
 
 def collect_labels(statements, labels=None, errors=None, reported=None):
+    """Recolhe todas as labels visíveis numa lista de statements.
+
+    A recolha é recursiva porque labels podem aparecer dentro de `IF` e `DO`.
+    Também são registadas as labels finais de ciclos `DO`, usadas por `GOTO` e
+    pela geração de código.
+    """
     if labels is None:
         labels = set()
 
@@ -212,6 +273,11 @@ def collect_labels(statements, labels=None, errors=None, reported=None):
 
 
 def check_call(name, arg_exprs, symbols, functions, errors, reported):
+    """Valida uma chamada de função usada como expressão.
+
+    Confirma que o nome existe, que representa uma função e que o número e tipos
+    dos argumentos são compatíveis com a assinatura recolhida.
+    """
     function_info = functions.get(name)
 
     if function_info is None:
@@ -250,6 +316,11 @@ def check_call(name, arg_exprs, symbols, functions, errors, reported):
 
 
 def check_subroutine_call(name, arg_exprs, symbols, functions, errors, reported):
+    """Valida uma chamada feita através de `CALL`.
+
+    `CALL` só pode invocar subrotinas. Funções chamadas com `CALL` e subrotinas
+    usadas como expressões são erros semânticos distintos.
+    """
     function_info = functions.get(name)
 
     if function_info is None:
@@ -286,6 +357,7 @@ def check_subroutine_call(name, arg_exprs, symbols, functions, errors, reported)
 
 
 def check_array_access(expr, symbols, functions, errors, reported):
+    """Valida o acesso a uma posição de array e devolve o tipo do elemento."""
     _, name, index_expr = expr
     info = get_symbol_info(name, symbols)
 
@@ -307,6 +379,12 @@ def check_array_access(expr, symbols, functions, errors, reported):
 
 
 def infer_indexed_type(expr, symbols, functions, errors, reported):
+    """Resolve expressões da forma `NOME(...)`.
+
+    A mesma sintaxe pode significar chamada de função ou acesso a array. A
+    decisão é feita consultando primeiro a tabela de subprogramas e depois a
+    tabela de símbolos locais/globais.
+    """
     _, name, arg_exprs = expr
 
     if name in functions:
@@ -331,6 +409,12 @@ def infer_indexed_type(expr, symbols, functions, errors, reported):
 
 
 def check_statement(stmt, symbols, functions, errors, reported, labels, in_function):
+    """Valida semanticamente um statement.
+
+    A função também atualiza a tabela de símbolos quando encontra declarações.
+    `in_function` indica se a validação ocorre dentro de um subprograma, o que é
+    necessário para decidir se `RETURN` é permitido.
+    """
     kind = stmt[0]
 
     if kind == 'label':
@@ -457,6 +541,11 @@ def check_statement(stmt, symbols, functions, errors, reported, labels, in_funct
 
 
 def check_expression(expr, symbols, functions, errors, reported):
+    """Percorre uma expressão apenas para provocar validações internas.
+
+    Quando o tipo final não é necessário, esta função ainda garante que nomes,
+    chamadas, acessos a arrays e subexpressões são verificados.
+    """
     kind = expr[0]
 
     if kind in ('number', 'bool'):
@@ -483,6 +572,12 @@ def check_expression(expr, symbols, functions, errors, reported):
 
 
 def infer_type(expr, symbols, functions, errors, reported):
+    """Infere o tipo de uma expressão.
+
+    Devolve `INTEGER`, `REAL`, `LOGICAL` ou `None` quando algum erro impede a
+    inferência. Durante a inferência também são reportados erros de uso de
+    variáveis, arrays e operadores.
+    """
     kind = expr[0]
 
     if kind == 'number':
@@ -568,6 +663,12 @@ def infer_type(expr, symbols, functions, errors, reported):
 
 
 def infer_condition_type(cond, symbols, functions, errors, reported):
+    """Infere e valida o tipo de uma condição.
+
+    Relações e operadores lógicos devem resultar em `LOGICAL`. Expressões
+    simples podem aparecer como condição, mas a validação do `IF` exige que o
+    resultado final seja lógico.
+    """
     kind = cond[0]
 
     if kind in ('number', 'bool', 'id', 'indexed', 'binop', 'uminus'):
@@ -625,6 +726,11 @@ def infer_condition_type(cond, symbols, functions, errors, reported):
 
 
 def compatible_types(var_type, expr_type):
+    """Indica se uma expressão pode ser atribuída a um destino.
+
+    A única conversão implícita permitida é `INTEGER` para `REAL`, que preserva
+    informação suficiente para este subconjunto.
+    """
     if var_type == expr_type:
         return True
 

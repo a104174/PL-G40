@@ -1,14 +1,30 @@
+"""Analisador sintático e construção da AST.
+
+O parser usa PLY/Yacc para reconhecer o subconjunto de Fortran adotado no
+projeto. Cada produção devolve uma AST baseada em tuplos Python. O primeiro
+elemento do tuplo identifica o tipo de nó, e os restantes elementos guardam a
+informação necessária para as fases seguintes.
+
+As docstrings das funções `p_*` não são documentação convencional: o PLY lê
+essas strings para obter as regras da gramática. Por isso, a explicação do
+módulo aparece em comentários e não dentro das funções de produção.
+"""
+
 import os
 
 import ply.yacc as yacc
 
 from .lexer import tokens
 
-# Programa completo
+# Programa principal. O quarto campo da AST guarda funções e subrotinas
+# declaradas depois do END do programa, como nos exemplos usados no projeto.
 def p_program(p):
     'program : PROGRAM ID statements END opt_subprogram_list'
     p[0] = ('program', p[2], p[3], p[5])
 
+
+# Subprogramas são opcionais. Quando não existem, a fase seguinte recebe uma
+# lista vazia, o que simplifica o tratamento no semantic/codegen.
 def p_opt_subprogram_list(p):
     '''
     opt_subprogram_list : subprogram_list
@@ -31,7 +47,8 @@ def p_subprogram_decl(p):
     '''
     p[0] = p[1]
 
-# Lista de statements
+# Lista de statements. As produções concatenam listas para preservar a ordem do
+# programa original, essencial na geração de código.
 def p_statements_multiple(p):
     'statements : statements statement'
     p[0] = p[1] + [p[2]]
@@ -48,6 +65,8 @@ def p_statement_labeled(p):
     'statement : NUMBER labeled_statement_core'
     p[0] = ('label', p[1], p[2])
 
+
+# `statement_core` concentra os statements aceites sem label explícita.
 def p_statement_core(p):
     '''
     statement_core : declaration
@@ -77,7 +96,8 @@ def p_labeled_statement_core(p):
     '''
     p[0] = p[1]
 
-# Declarações
+# Declarações de tipos escalares e arrays. O tipo fica no nó `declare`; cada
+# item da lista indica se é escalar ou array.
 def p_declaration_integer(p):
     'declaration : INTEGER decl_list'
     p[0] = ('declare', 'INTEGER', p[2])
@@ -90,7 +110,8 @@ def p_declaration_logical(p):
     'declaration : LOGICAL decl_list'
     p[0] = ('declare', 'LOGICAL', p[2])
 
-# Lista de declarações
+
+# Uma declaração pode declarar vários nomes separados por vírgula.
 def p_decl_list_multiple(p):
     'decl_list : decl_list COMMA decl_item'
     p[0] = p[1] + [p[3]]
@@ -107,7 +128,8 @@ def p_decl_item_array(p):
     'decl_item : ID LPAREN NUMBER RPAREN'
     p[0] = ('array', p[1], p[3])
 
-# Atribuição
+
+# Atribuições aceitam variáveis escalares e posições de arrays.
 def p_assignment(p):
     '''
     assignment : ID ASSIGN expression
@@ -115,7 +137,9 @@ def p_assignment(p):
     '''
     p[0] = ('assign', p[1], p[3])
 
-# PRINT *, ...
+
+# I/O suportado no formato simplificado do enunciado: `PRINT *, ...` e
+# `READ *, ...`.
 def p_print_stmt(p):
     'print_stmt : PRINT TIMES COMMA print_list'
     p[0] = ('print', p[4])
@@ -124,6 +148,9 @@ def p_read_stmt(p):
     'read_stmt : READ TIMES COMMA read_list'
     p[0] = ('read', p[4])
 
+
+# IF com ramo ELSE opcional. O ramo ausente é representado por None para
+# facilitar a distinção no gerador de código.
 def p_if_stmt(p):
     '''
     if_stmt : IF LPAREN condition RPAREN THEN statements ENDIF
@@ -134,6 +161,9 @@ def p_if_stmt(p):
     else:
         p[0] = ('if', p[3], p[6], p[8])
 
+
+# O DO usa a forma clássica com label final. A regra valida desde logo que o
+# label do DO coincide com o label do CONTINUE que fecha o ciclo.
 def p_do_stmt(p):
     'do_stmt : DO NUMBER ID ASSIGN expression COMMA expression do_body_statements labeled_continue'
     if p[2] != p[9][1]:
@@ -160,6 +190,8 @@ def p_continue_stmt(p):
     'continue_stmt : CONTINUE'
     p[0] = ('continue',)
 
+
+# Tipos aceites em declarações de funções.
 def p_type_spec_integer(p):
     'type_spec : INTEGER'
     p[0] = 'INTEGER'
@@ -180,6 +212,9 @@ def p_subroutine_decl(p):
     'subroutine_decl : SUBROUTINE ID LPAREN opt_param_list RPAREN function_body END'
     p[0] = ('subroutine', p[2], p[4], p[6])
 
+
+# Parâmetros formais de funções/subrotinas. Os tipos são inferidos mais tarde a
+# partir das declarações locais no corpo do subprograma.
 def p_opt_param_list(p):
     '''
     opt_param_list : param_list
@@ -203,6 +238,8 @@ def p_function_body_single(p):
     'function_body : statement'
     p[0] = [p[1]]
 
+
+# Alvos de READ podem ser escalares ou posições de arrays.
 def p_read_list_multiple(p):
     'read_list : read_list COMMA read_target'
     p[0] = p[1] + [p[3]]
@@ -219,6 +256,8 @@ def p_read_target_array(p):
     'read_target : array_access'
     p[0] = p[1]
 
+
+# Corpo de DO: permite statements normais e statements com label interno.
 def p_do_body_statements_multiple(p):
     'do_body_statements : do_body_statements do_body_statement'
     p[0] = p[1] + [p[2]]
@@ -250,7 +289,9 @@ def p_do_labeled_statement_core(p):
     '''
     p[0] = p[1]
 
-# Lista de coisas a imprimir
+
+# Lista de valores a imprimir. Strings são tratadas separadamente para o
+# codegen escolher WRITES em vez de WRITEI/WRITEF.
 def p_print_list_multiple(p):
     'print_list : print_list COMMA printable'
     p[0] = p[1] + [p[3]]
@@ -271,7 +312,9 @@ def p_array_access(p):
     'array_access : ID LPAREN expression RPAREN'
     p[0] = ('array_access', p[1], p[3])
 
-# Expressões
+
+# Expressões aritméticas. O tipo final é decidido pela análise semântica, não
+# pelo parser.
 def p_expression_binop(p):
     '''
     expression : expression PLUS expression
@@ -303,6 +346,9 @@ def p_expression_indexed(p):
     else:
         p[0] = ('indexed', p[1], p[3])
 
+
+# Argumentos de funções e de acessos indexados usam a mesma forma sintática. A
+# análise semântica distingue chamada de função de acesso a array.
 def p_opt_argument_list(p):
     '''
     opt_argument_list : argument_list
@@ -330,7 +376,9 @@ def p_expression_uminus(p):
     'expression : MINUS expression %prec UMINUS'
     p[0] = ('uminus', p[2])
 
-# Condições
+
+# Condições. Relações devolvem LOGICAL; expressões LOGICAL também podem ser
+# usadas diretamente em IF, por exemplo `IF (ISPRIM) THEN`.
 def p_condition_relop(p):
     '''
     condition : expression DOT_EQ expression
@@ -361,7 +409,8 @@ def p_condition_expression(p):
     'condition : expression %prec COND_EXPR'
     p[0] = p[1]
 
-# Precedência dos operadores
+# Precedência dos operadores, do menor para o maior. `COND_EXPR` resolve o caso
+# em que uma expressão simples é usada como condição.
 precedence = (
     ('nonassoc', 'COND_EXPR'),
     ('left', 'DOT_OR'),
@@ -374,6 +423,8 @@ precedence = (
 )
 
 def p_error(p):
+    # O parser devolve None nestes casos; a CLI transforma isso em erro
+    # sintático para o utilizador.
     if p:
         print(f"Erro sintático no token {p.type} com valor {p.value}")
     else:
@@ -383,6 +434,9 @@ def p_empty(p):
     'empty :'
     p[0] = []
 
+
+# Tabelas geradas pelo PLY ficam dentro de `src/` para manter os artefactos
+# previsíveis e compatíveis com os imports do pacote.
 parser = yacc.yacc(
     outputdir=os.path.dirname(__file__),
     tabmodule='src.parsetab',
