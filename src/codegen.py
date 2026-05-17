@@ -475,21 +475,28 @@ def collect_functions_ewvm(function_nodes):
                 'offset': index - param_count,
             }
 
+        # Devolve um dicionário com uma entrada por função, no formato:
         functions[name] = {
-            'label': f"FUNC{name}",
-            'return_type': return_type,
-            'param_names': param_names,
-            'param_types': param_types,
-            'layout': local_layout,
-            'body': body_statements,
-            'local_slots': local_offset,
+            'label': f"FUNC{name}",         # FUNC[nome função]
+            'return_type': return_type,     # 'INTEGER', 'REAL' ou 'LOGICAL'
+            'param_names': param_names,     # nomes dos parâmetros formais, por ordem
+            'param_types': param_types,     # tipos correspondentes
+            'layout': local_layout,         # símbolo -> info (offset, storage, type)
+            'body': body_statements,        # statements do AST
+            'local_slots': local_offset,    # número de slots locais reservados
         }
-
+        # Devolve 'None' se algum subprograma não for suportado.
     return functions
 
 
 def infer_expression_type_ewvm_phase1(expr, layout, functions=None):
-    """Infere o tipo EWVM de uma expressão já validada semanticamente."""
+    """Infere o tipo EWVM de uma expressão já validada semanticamente.
+    
+    Ao contrário de 'generate_expression_ewvm_phase_1', esta função não emite
+    instruções, apenas calcula o tipo que a expressão produziria. É usada
+    antes da 'generate' para decidir se é necessário emitir `ITOF` e para
+    escolher entre instruções inteiras e reais (por exemplo, `ADD` vs `FADD`).
+    """
     kind = expr[0]
     if functions is None:
         functions = {}
@@ -703,8 +710,11 @@ def generate_expression_ewvm_phase1(expr, code, layout, functions):
             code.append(f"PUSHA {function_info['label']}")
             code.append("CALL")
 
-            # Depois do CALL, o resultado fica junto aos argumentos usados na
-            # chamada. Os argumentos são removidos preservando o valor de retorno.
+            # Após o CALL, a stack contém: [ret] [arg1] [arg2] ... [argN]
+            # O valor de retorno fica na posição mais funda; os argumentos ficam
+            # por cima. Para cada argumento extra (a partir do segundo), faz-se
+            # SWAP + POP 1 para o descartar sem perder o valor de retorno.
+            # Com 0 ou 1 argumento não há nada a remover.
             for _ in range(max(0, len(arg_exprs) - 1)):
                 code.append("SWAP")
                 code.append("POP 1")
